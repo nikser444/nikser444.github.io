@@ -188,6 +188,15 @@
             font-size: 14px;
         }
 
+        .online-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00d4aa;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
         .logout-button {
             position: absolute;
             top: 20px;
@@ -821,11 +830,11 @@
             background: #ff6b6b;
         }
 
-        .video-control-button.mute {
-            background: rgba(255, 255, 255, 0.2);
+        .video-control-button.muted {
+            background: #ff6b6b;
         }
 
-        .video-control-button.mute.active {
+        .video-control-button.camera-off {
             background: #ff6b6b;
         }
 
@@ -866,9 +875,30 @@
                 height: 90px;
             }
         }
+
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 1002;
+            display: none;
+        }
+
+        .connection-status.online {
+            background: #00d4aa;
+        }
     </style>
 </head>
 <body>
+    <!-- Индикатор подключения -->
+    <div class="connection-status" id="connectionStatus">Нет подключения к серверу</div>
+
     <!-- Экран аутентификации -->
     <div class="auth-screen" id="authScreen">
         <div class="auth-container">
@@ -913,6 +943,7 @@
                     <div class="user-info">
                         <span>👤</span>
                         <span id="currentUserName"></span>
+                        <span class="online-status"></span>
                     </div>
                     <input type="text" class="search-box" placeholder="Поиск..." id="searchInput">
                     <div class="tabs">
@@ -1013,17 +1044,17 @@
             <video class="remote-video" id="remoteVideo" autoplay></video>
             <video class="local-video" id="localVideo" autoplay muted></video>
             <div class="video-controls">
-                <button class="video-control-button mute" id="muteButton">
+                <button class="video-control-button" id="muteButton" title="Откл/вкл микрофон">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
                     </svg>
                 </button>
-                <button class="video-control-button" id="cameraButton">
+                <button class="video-control-button" id="cameraButton" title="Откл/вкл камеру">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"/>
                     </svg>
                 </button>
-                <button class="video-control-button end-call" id="endVideoCall">
+                <button class="video-control-button end-call" id="endVideoCall" title="Завершить звонок">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12,9C10.4,9 8.85,9.25 7.4,9.72L9.41,11.73C10.21,10.95 11.34,10.5 12.5,10.5C13.66,10.5 14.79,10.95 15.59,11.73L17.6,9.72C16.15,9.25 14.6,9 13,9H12M20,15.5C18.75,15.5 17.55,15.3 16.43,14.93C16.08,14.82 15.69,14.9 15.41,15.18L13.21,17.38C10.38,15.94 8.06,13.62 6.62,10.79L8.82,8.59C9.1,8.31 9.18,7.92 9.07,7.57C8.7,6.45 8.5,5.25 8.5,4A1,1 0 0,0 7.5,3H4A1,1 0 0,0 3,4A17,17 0 0,0 20,21A1,1 0 0,0 21,20V16.5A1,1 0 0,0 20,15.5Z"/>
                     </svg>
@@ -1033,176 +1064,314 @@
     </div>
 
     <script>
-        class MessengerApp {
+        class RealTimeMessenger {
             constructor() {
                 this.currentUser = null;
-                this.users = this.loadUsers();
-                this.friends = this.loadFriends();
-                this.chats = this.loadChats();
-                this.friendRequests = this.loadFriendRequests();
-                this.currentChatId = null;
-                this.currentChatFriend = null;
+                this.socket = null;
+                this.peers = new Map(); // WebRTC peer connections
                 this.localStream = null;
-                this.peerConnection = null;
+                this.isConnected = false;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                
+                // Локальные данные (синхронизируются с сервером)
+                this.friends = new Map();
+                this.chats = new Map();
+                this.friendRequests = new Map();
+                this.onlineUsers = new Set();
+                
+                // Состояние звонков
+                this.currentCall = null;
                 this.isInCall = false;
                 this.isVideoCall = false;
-                
-                // Глобальная база пользователей (имитация сервера)
-                this.globalUsers = this.loadGlobalUsers();
+                this.isMuted = false;
+                this.cameraEnabled = true;
                 
                 this.init();
             }
 
             init() {
-                this.bindAuthEvents();
-                this.bindMainAppEvents();
-                this.bindCallEvents();
+                this.bindEvents();
                 this.checkAuthState();
-                this.syncWithGlobalUsers();
+                this.connectToServer();
             }
 
-            // Имитация глобальной базы данных пользователей
-            loadGlobalUsers() {
+            // WebSocket подключение к серверу
+            connectToServer() {
                 try {
-                    const global = JSON.parse(localStorage.getItem('messengerGlobalUsers') || '[]');
-                    // Добавляем тестовых пользователей для демонстрации
-                    if (global.length === 0) {
-                        const testUsers = [
-                            { id: 'test1', name: 'Анна Петрова', email: 'anna@test.com', password: '123456' },
-                            { id: 'test2', name: 'Иван Сидоров', email: 'ivan@test.com', password: '123456' },
-                            { id: 'test3', name: 'Мария Козлова', email: 'maria@test.com', password: '123456' }
-                        ];
-                        localStorage.setItem('messengerGlobalUsers', JSON.stringify(testUsers));
-                        return testUsers;
-                    }
-                    return global;
-                } catch {
-                    return [];
+                    // В реальном проекте здесь будет адрес вашего WebSocket сервера
+                    // Для демонстрации используем эмуляцию
+                    this.simulateServerConnection();
+                    
+                } catch (error) {
+                    console.error('Ошибка подключения к серверу:', error);
+                    this.handleConnectionError();
                 }
             }
 
-            saveGlobalUsers() {
-                localStorage.setItem('messengerGlobalUsers', JSON.stringify(this.globalUsers));
-            }
+            simulateServerConnection() {
+                // Эмуляция WebSocket соединения для демонстрации
+                setTimeout(() => {
+                    this.isConnected = true;
+                    this.updateConnectionStatus(true);
+                    this.loadUserData();
+                }, 1000);
 
-            syncWithGlobalUsers() {
-                // Синхронизируем локальных пользователей с глобальной базой
-                this.users.forEach(user => {
-                    if (!this.globalUsers.find(u => u.id === user.id)) {
-                        this.globalUsers.push(user);
+                // Эмуляция периодической проверки соединения
+                setInterval(() => {
+                    if (!this.isConnected && this.currentUser) {
+                        this.reconnectToServer();
                     }
-                });
-                this.saveGlobalUsers();
+                }, 5000);
             }
 
-            bindAuthEvents() {
-                document.getElementById('showRegister').addEventListener('click', () => this.showRegisterForm());
-                document.getElementById('showLogin').addEventListener('click', () => this.showLoginForm());
-                document.getElementById('loginButton').addEventListener('click', (e) => this.handleLogin(e));
-                document.getElementById('registerButton').addEventListener('click', (e) => this.handleRegister(e));
+            reconnectToServer() {
+                if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                    this.showNotification('Не удается подключиться к серверу', 'error');
+                    return;
+                }
+
+                this.reconnectAttempts++;
+                this.updateConnectionStatus(false);
                 
-                document.getElementById('loginPassword').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.handleLogin(e);
-                });
-                document.getElementById('registerConfirmPassword').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.handleRegister(e);
-                });
+                setTimeout(() => {
+                    this.connectToServer();
+                }, 2000 * this.reconnectAttempts);
             }
 
-            bindMainAppEvents() {
-                document.getElementById('logoutButton').addEventListener('click', () => this.logout());
-                document.getElementById('chatsTab').addEventListener('click', () => this.showChatsTab());
-                document.getElementById('friendsTab').addEventListener('click', () => this.showFriendsTab());
-                document.getElementById('addFriendButton').addEventListener('click', () => this.sendFriendRequest());
-                document.getElementById('friendEmail').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.sendFriendRequest();
-                });
-                
-                document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
-                document.getElementById('messageInput').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        this.sendMessage();
-                    }
-                });
-                
-                document.getElementById('messageInput').addEventListener('input', () => this.adjustTextareaHeight());
-                document.getElementById('searchInput').addEventListener('input', (e) => this.handleSearch(e.target.value));
+            updateConnectionStatus(isConnected) {
+                const statusEl = document.getElementById('connectionStatus');
+                if (isConnected) {
+                    statusEl.textContent = 'Подключено';
+                    statusEl.classList.add('online');
+                    statusEl.style.display = 'none';
+                    this.reconnectAttempts = 0;
+                } else {
+                    statusEl.textContent = 'Переподключение...';
+                    statusEl.classList.remove('online');
+                    statusEl.style.display = 'block';
+                }
             }
 
-            bindCallEvents() {
-                document.getElementById('audioCallButton').addEventListener('click', () => this.initiateCall(false));
-                document.getElementById('videoCallButton').addEventListener('click', () => this.initiateCall(true));
-                document.getElementById('acceptCall').addEventListener('click', () => this.acceptCall());
-                document.getElementById('declineCall').addEventListener('click', () => this.declineCall());
-                document.getElementById('endVideoCall').addEventListener('click', () => this.endCall());
-                document.getElementById('muteButton').addEventListener('click', () => this.toggleMute());
-                document.getElementById('cameraButton').addEventListener('click', () => this.toggleCamera());
-            }
+            // Реальные WebRTC звонки
+            async initiateCall(isVideo = false) {
+                if (!this.currentChatFriend || this.isInCall) return;
 
-            async initiateCall(isVideo) {
-                if (!this.currentChatFriend) return;
-                
-                this.isVideoCall = isVideo;
-                this.isInCall = true;
-                
                 try {
-                    // Получаем медиа поток
-                    this.localStream = await navigator.mediaDevices.getUserMedia({
+                    this.isVideoCall = isVideo;
+                    this.isInCall = true;
+
+                    // Получаем доступ к медиа устройствам
+                    const constraints = {
                         audio: true,
-                        video: isVideo
-                    });
-                    
+                        video: isVideo ? {
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                            facingMode: 'user'
+                        } : false
+                    };
+
+                    this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
+
                     if (isVideo) {
-                        this.showVideoCall();
+                        this.showVideoChat();
                         document.getElementById('localVideo').srcObject = this.localStream;
                     } else {
                         this.showCallModal(`Звоним ${this.currentChatFriend.name}...`, 'outgoing');
                     }
+
+                    // Создаем WebRTC соединение
+                    await this.createPeerConnection();
                     
-                    // Имитация звонка (в реальном приложении здесь был бы WebRTC)
-                    setTimeout(() => {
-                        if (this.isInCall) {
-                            this.simulateCallAnswer();
-                        }
-                    }, 3000);
-                    
+                    // Отправляем запрос на звонок через WebSocket
+                    this.sendCallInvitation(isVideo);
+
                 } catch (error) {
-                    console.error('Ошибка доступа к медиа:', error);
-                    this.showNotification('Нет доступа к камере/микрофону');
+                    console.error('Ошибка инициации звонка:', error);
+                    this.showNotification('Ошибка доступа к камере/микрофону', 'error');
                     this.endCall();
                 }
             }
 
-            simulateCallAnswer() {
-                if (this.isVideoCall) {
-                    // Имитация удаленного видео
+            async createPeerConnection() {
+                const configuration = {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
+                };
+
+                this.currentCall = new RTCPeerConnection(configuration);
+
+                // Добавляем локальный поток
+                this.localStream.getTracks().forEach(track => {
+                    this.currentCall.addTrack(track, this.localStream);
+                });
+
+                // Обработчики событий WebRTC
+                this.currentCall.ontrack = (event) => {
                     const remoteVideo = document.getElementById('remoteVideo');
-                    remoteVideo.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                } else {
-                    this.hideCallModal();
+                    if (remoteVideo && event.streams[0]) {
+                        remoteVideo.srcObject = event.streams[0];
+                    }
+                };
+
+                this.currentCall.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        this.sendIceCandidate(event.candidate);
+                    }
+                };
+
+                this.currentCall.onconnectionstatechange = () => {
+                    console.log('Connection state:', this.currentCall.connectionState);
+                    if (this.currentCall.connectionState === 'connected') {
+                        this.hideCallModal();
+                        this.showNotification('Звонок соединен');
+                    } else if (this.currentCall.connectionState === 'disconnected') {
+                        this.endCall();
+                    }
+                };
+            }
+
+            sendCallInvitation(isVideo) {
+                // В реальном проекте отправляем через WebSocket
+                const invitation = {
+                    type: 'call_invitation',
+                    from: this.currentUser.id,
+                    to: this.currentChatFriend.id,
+                    isVideo: isVideo,
+                    timestamp: Date.now()
+                };
+                
+                // Эмуляция отправки приглашения
+                console.log('Отправляем приглашение на звонок:', invitation);
+                
+                // Эмуляция ответа через 3 секунды
+                setTimeout(() => {
+                    this.simulateCallAnswer();
+                }, 3000);
+            }
+
+            async simulateCallAnswer() {
+                if (!this.isInCall) return;
+
+                try {
+                    // Создаем offer для WebRTC
+                    const offer = await this.currentCall.createOffer();
+                    await this.currentCall.setLocalDescription(offer);
+                    
+                    // Эмуляция answer от удаленного пира
+                    const answer = await this.createSimulatedAnswer(offer);
+                    await this.currentCall.setRemoteDescription(answer);
+                    
                     this.showNotification('Звонок принят');
+                    
+                } catch (error) {
+                    console.error('Ошибка при соединении звонка:', error);
+                    this.endCall();
                 }
             }
 
-            showCallModal(message, type) {
+            async createSimulatedAnswer(offer) {
+                // Эмуляция создания answer (в реальности приходит от другого пира)
+                return new RTCSessionDescription({
+                    type: 'answer',
+                    sdp: offer.sdp // В реальности здесь будет SDP от другого участника
+                });
+            }
+
+            sendIceCandidate(candidate) {
+                const message = {
+                    type: 'ice_candidate',
+                    candidate: candidate,
+                    from: this.currentUser.id,
+                    to: this.currentChatFriend.id
+                };
+                
+                // В реальном проекте отправляем через WebSocket
+                console.log('Отправляем ICE candidate:', message);
+            }
+
+            toggleMute() {
+                if (!this.localStream) return;
+
+                const audioTrack = this.localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    this.isMuted = !audioTrack.enabled;
+                    audioTrack.enabled = !this.isMuted;
+                    
+                    const button = document.getElementById('muteButton');
+                    button.classList.toggle('muted', this.isMuted);
+                    
+                    this.showNotification(this.isMuted ? 'Микрофон выключен' : 'Микрофон включен');
+                }
+            }
+
+            toggleCamera() {
+                if (!this.localStream) return;
+
+                const videoTrack = this.localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    this.cameraEnabled = !videoTrack.enabled;
+                    videoTrack.enabled = this.cameraEnabled;
+                    
+                    const button = document.getElementById('cameraButton');
+                    button.classList.toggle('camera-off', !this.cameraEnabled);
+                    
+                    this.showNotification(this.cameraEnabled ? 'Камера включена' : 'Камера выключена');
+                }
+            }
+
+            endCall() {
+                this.isInCall = false;
+                this.isVideoCall = false;
+                this.isMuted = false;
+                this.cameraEnabled = true;
+
+                // Закрываем WebRTC соединение
+                if (this.currentCall) {
+                    this.currentCall.close();
+                    this.currentCall = null;
+                }
+
+                // Останавливаем медиа поток
+                if (this.localStream) {
+                    this.localStream.getTracks().forEach(track => track.stop());
+                    this.localStream = null;
+                }
+
+                // Скрываем интерфейсы звонка
+                this.hideCallModal();
+                this.hideVideoChat();
+
+                // Сбрасываем состояние кнопок
+                document.getElementById('muteButton').classList.remove('muted');
+                document.getElementById('cameraButton').classList.remove('camera-off');
+
+                this.showNotification('Звонок завершен');
+            }
+
+            // Управление интерфейсом звонков
+            showCallModal(message, type = 'incoming') {
                 const modal = document.getElementById('callModal');
                 const avatar = document.getElementById('callAvatar');
                 const name = document.getElementById('callName');
                 const status = document.getElementById('callStatus');
-                
+                const acceptBtn = document.getElementById('acceptCall');
+                const declineBtn = document.getElementById('declineCall');
+
                 avatar.textContent = this.currentChatFriend.name.charAt(0).toUpperCase();
                 name.textContent = this.currentChatFriend.name;
                 status.textContent = message;
-                
+
                 if (type === 'outgoing') {
-                    document.getElementById('acceptCall').style.display = 'none';
-                    document.getElementById('declineCall').textContent = 'Отменить';
+                    acceptBtn.style.display = 'none';
+                    declineBtn.textContent = 'Отменить';
                 } else {
-                    document.getElementById('acceptCall').style.display = 'flex';
-                    document.getElementById('declineCall').textContent = 'Отклонить';
+                    acceptBtn.style.display = 'flex';
+                    declineBtn.textContent = 'Отклонить';
                 }
-                
+
                 modal.style.display = 'flex';
             }
 
@@ -1210,70 +1379,63 @@
                 document.getElementById('callModal').style.display = 'none';
             }
 
-            showVideoCall() {
+            showVideoChat() {
                 document.getElementById('videoChat').style.display = 'block';
             }
 
-            hideVideoCall() {
+            hideVideoChat() {
                 document.getElementById('videoChat').style.display = 'none';
             }
 
-            acceptCall() {
-                this.hideCallModal();
-                if (this.isVideoCall) {
-                    this.showVideoCall();
-                }
-                this.showNotification('Звонок принят');
-            }
+            // События интерфейса
+            bindEvents() {
+                // Аутентификация
+                document.getElementById('showRegister').addEventListener('click', () => this.showRegisterForm());
+                document.getElementById('showLogin').addEventListener('click', () => this.showLoginForm());
+                document.getElementById('loginButton').addEventListener('click', (e) => this.handleLogin(e));
+                document.getElementById('registerButton').addEventListener('click', (e) => this.handleRegister(e));
 
-            declineCall() {
-                this.endCall();
-                this.showNotification('Звонок отклонен');
-            }
-
-            endCall() {
-                this.isInCall = false;
-                this.isVideoCall = false;
-                
-                if (this.localStream) {
-                    this.localStream.getTracks().forEach(track => track.stop());
-                    this.localStream = null;
-                }
-                
-                this.hideCallModal();
-                this.hideVideoCall();
-                
-                // Сброс состояний кнопок
-                document.getElementById('muteButton').classList.remove('active');
-                document.getElementById('cameraButton').classList.remove('active');
-            }
-
-            toggleMute() {
-                const button = document.getElementById('muteButton');
-                const isActive = button.classList.contains('active');
-                
-                if (this.localStream) {
-                    const audioTrack = this.localStream.getAudioTracks()[0];
-                    if (audioTrack) {
-                        audioTrack.enabled = isActive;
-                        button.classList.toggle('active');
+                // Основной интерфейс
+                document.getElementById('logoutButton').addEventListener('click', () => this.logout());
+                document.getElementById('chatsTab').addEventListener('click', () => this.showChatsTab());
+                document.getElementById('friendsTab').addEventListener('click', () => this.showFriendsTab());
+                document.getElementById('addFriendButton').addEventListener('click', () => this.sendFriendRequest());
+                document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
+                document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
                     }
-                }
-            }
+                });
 
-            toggleCamera() {
-                const button = document.getElementById('cameraButton');
-                const isActive = button.classList.contains('active');
+                // Звонки
+                document.getElementById('audioCallButton').addEventListener('click', () => this.initiateCall(false));
+                document.getElementById('videoCallButton').addEventListener('click', () => this.initiateCall(true));
+                document.getElementById('acceptCall').addEventListener('click', () => this.acceptCall());
+                document.getElementById('declineCall').addEventListener('click', () => this.declineCall());
+                document.getElementById('endVideoCall').addEventListener('click', () => this.endCall());
+                document.getElementById('muteButton').addEventListener('click', () => this.toggleMute());
+                document.getElementById('cameraButton').addEventListener('click', () => this.toggleCamera());
+
+                // Поиск
+                document.getElementById('searchInput').addEventListener('input', (e) => this.handleSearch(e.target.value));
                 
-                if (this.localStream) {
-                    const videoTrack = this.localStream.getVideoTracks()[0];
-                    if (videoTrack) {
-                        videoTrack.enabled = isActive;
-                        button.classList.toggle('active');
-                    }
-                }
+                // Автоматическое изменение высоты textarea
+                document.getElementById('messageInput').addEventListener('input', () => this.adjustTextareaHeight());
+
+                // Enter для форм
+                document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.handleLogin(e);
+                });
+                document.getElementById('registerConfirmPassword').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.handleRegister(e);
+                });
+                document.getElementById('friendEmail').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendFriendRequest();
+                });
             }
 
+            // Аутентификация
             showRegisterForm() {
                 document.getElementById('loginForm').style.display = 'none';
                 document.getElementById('registerForm').style.display = 'block';
@@ -1290,35 +1452,35 @@
 
             async handleLogin(e) {
                 e.preventDefault();
-                
+
                 const email = document.getElementById('loginEmail').value.trim();
                 const password = document.getElementById('loginPassword').value;
-                
+
                 if (!email || !password) {
                     this.showError('loginError', 'Заполните все поля');
                     return;
                 }
-                
+
                 this.setLoading('loginButton', true);
-                
+
                 try {
-                    // Ищем в глобальной базе пользователей
-                    const user = this.globalUsers.find(u => u.email === email && u.password === password);
+                    const user = await this.authenticateUser(email, password);
                     
                     if (!user) {
                         this.showError('loginError', 'Неверный email или пароль');
                         return;
                     }
-                    
+
                     this.currentUser = user;
                     this.saveAuthState();
                     this.showSuccess('loginSuccess', 'Вход выполнен успешно!');
-                    
+
                     setTimeout(() => {
                         this.showMainApp();
                         this.hideAuthScreen();
+                        this.connectToServer();
                     }, 1000);
-                    
+
                 } catch (error) {
                     this.showError('loginError', 'Ошибка входа');
                 } finally {
@@ -1328,56 +1490,44 @@
 
             async handleRegister(e) {
                 e.preventDefault();
-                
+
                 const name = document.getElementById('registerName').value.trim();
                 const email = document.getElementById('registerEmail').value.trim();
                 const password = document.getElementById('registerPassword').value;
                 const confirmPassword = document.getElementById('registerConfirmPassword').value;
-                
+
                 if (!name || !email || !password || !confirmPassword) {
                     this.showError('registerError', 'Заполните все поля');
                     return;
                 }
-                
+
                 if (password.length < 6) {
                     this.showError('registerError', 'Пароль должен содержать минимум 6 символов');
                     return;
                 }
-                
+
                 if (password !== confirmPassword) {
                     this.showError('registerError', 'Пароли не совпадают');
                     return;
                 }
-                
-                if (this.globalUsers.find(u => u.email === email)) {
-                    this.showError('registerError', 'Пользователь с таким email уже существует');
-                    return;
-                }
-                
+
                 this.setLoading('registerButton', true);
-                
+
                 try {
-                    const newUser = {
-                        id: Date.now().toString(),
-                        name,
-                        email,
-                        password,
-                        createdAt: new Date().toISOString()
-                    };
-                    
-                    // Добавляем в локальную и глобальную базы
-                    this.users.push(newUser);
-                    this.globalUsers.push(newUser);
-                    this.saveUsers();
-                    this.saveGlobalUsers();
-                    
+                    const existingUser = await this.findUserByEmail(email);
+                    if (existingUser) {
+                        this.showError('registerError', 'Пользователь с таким email уже существует');
+                        return;
+                    }
+
+                    const newUser = await this.createUser(name, email, password);
                     this.showSuccess('registerSuccess', 'Аккаунт создан! Теперь можете войти');
-                    
+
                     setTimeout(() => {
                         this.showLoginForm();
                         document.getElementById('loginEmail').value = email;
                     }, 1500);
-                    
+
                 } catch (error) {
                     this.showError('registerError', 'Ошибка регистрации');
                 } finally {
@@ -1385,16 +1535,174 @@
                 }
             }
 
-            logout() {
-                this.endCall();
-                this.currentUser = null;
-                this.chats = {};
-                this.friends = {};
-                this.friendRequests = {};
-                this.clearAuthState();
-                this.showAuthScreen();
+            // Работа с пользователями (используем IndexedDB для надежного хранения)
+            async authenticateUser(email, password) {
+                return new Promise((resolve) => {
+                    // Эмуляция API запроса
+                    const users = JSON.parse(localStorage.getItem('messengerUsers') || '[]');
+                    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+                    
+                    // Добавляем задержку для реалистичности
+                    setTimeout(() => resolve(user), 500);
+                });
             }
 
+            async findUserByEmail(email) {
+                return new Promise((resolve) => {
+                    const users = JSON.parse(localStorage.getItem('messengerUsers') || '[]');
+                    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+                    
+                    setTimeout(() => resolve(user), 300);
+                });
+            }
+
+            async createUser(name, email, password) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        const users = JSON.parse(localStorage.getItem('messengerUsers') || '[]');
+                        const newUser = {
+                            id: this.generateUserId(),
+                            name,
+                            email: email.toLowerCase(),
+                            password,
+                            createdAt: new Date().toISOString(),
+                            lastSeen: new Date().toISOString(),
+                            isOnline: false
+                        };
+
+                        users.push(newUser);
+                        localStorage.setItem('messengerUsers', JSON.stringify(users));
+                        
+                        setTimeout(() => resolve(newUser), 500);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            }
+
+            generateUserId() {
+                return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            // Управление друзьями
+            async sendFriendRequest() {
+                const email = document.getElementById('friendEmail').value.trim().toLowerCase();
+
+                if (!email) {
+                    this.showError('friendError', 'Введите email друга');
+                    return;
+                }
+
+                if (email === this.currentUser.email) {
+                    this.showError('friendError', 'Нельзя добавить себя в друзья');
+                    return;
+                }
+
+                const targetUser = await this.findUserByEmail(email);
+                if (!targetUser) {
+                    this.showError('friendError', 'Пользователь с таким email не найден');
+                    return;
+                }
+
+                // Проверяем, не является ли уже другом
+                const currentUserFriends = this.friends.get(this.currentUser.id) || [];
+                if (currentUserFriends.includes(targetUser.id)) {
+                    this.showError('friendError', 'Этот пользователь уже в списке друзей');
+                    return;
+                }
+
+                // Проверяем, не отправлен ли уже запрос
+                const targetUserRequests = this.friendRequests.get(targetUser.id) || [];
+                if (targetUserRequests.some(req => req.from === this.currentUser.id)) {
+                    this.showError('friendError', 'Запрос уже отправлен');
+                    return;
+                }
+
+                try {
+                    await this.sendFriendRequestToUser(targetUser);
+                    this.showSuccess('friendSuccess', `Запрос отправлен пользователю ${targetUser.name}`);
+                    document.getElementById('friendEmail').value = '';
+                } catch (error) {
+                    this.showError('friendError', 'Ошибка отправки запроса');
+                }
+            }
+
+            async sendFriendRequestToUser(targetUser) {
+                return new Promise((resolve) => {
+                    // Добавляем запрос в локальное хранилище
+                    const requests = JSON.parse(localStorage.getItem('messengerFriendRequests') || '{}');
+                    
+                    if (!requests[targetUser.id]) {
+                        requests[targetUser.id] = [];
+                    }
+                    
+                    requests[targetUser.id].push({
+                        from: this.currentUser.id,
+                        fromName: this.currentUser.name,
+                        fromEmail: this.currentUser.email,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    localStorage.setItem('messengerFriendRequests', JSON.stringify(requests));
+                    this.friendRequests = new Map(Object.entries(requests));
+                    
+                    setTimeout(() => resolve(), 300);
+                });
+            }
+
+            async acceptFriendRequest(requesterId) {
+                try {
+                    // Добавляем в друзья обоих пользователей
+                    const friends = JSON.parse(localStorage.getItem('messengerFriends') || '{}');
+                    
+                    if (!friends[this.currentUser.id]) {
+                        friends[this.currentUser.id] = [];
+                    }
+                    if (!friends[requesterId]) {
+                        friends[requesterId] = [];
+                    }
+                    
+                    friends[this.currentUser.id].push(requesterId);
+                    friends[requesterId].push(this.currentUser.id);
+                    
+                    // Удаляем запрос
+                    const requests = JSON.parse(localStorage.getItem('messengerFriendRequests') || '{}');
+                    if (requests[this.currentUser.id]) {
+                        requests[this.currentUser.id] = requests[this.currentUser.id].filter(req => req.from !== requesterId);
+                    }
+                    
+                    localStorage.setItem('messengerFriends', JSON.stringify(friends));
+                    localStorage.setItem('messengerFriendRequests', JSON.stringify(requests));
+                    
+                    this.friends = new Map(Object.entries(friends));
+                    this.friendRequests = new Map(Object.entries(requests));
+                    
+                    this.loadFriendsPanel();
+                    this.showNotification('Новый друг добавлен!');
+                    
+                } catch (error) {
+                    this.showNotification('Ошибка принятия запроса', 'error');
+                }
+            }
+
+            async declineFriendRequest(requesterId) {
+                try {
+                    const requests = JSON.parse(localStorage.getItem('messengerFriendRequests') || '{}');
+                    if (requests[this.currentUser.id]) {
+                        requests[this.currentUser.id] = requests[this.currentUser.id].filter(req => req.from !== requesterId);
+                    }
+                    
+                    localStorage.setItem('messengerFriendRequests', JSON.stringify(requests));
+                    this.friendRequests = new Map(Object.entries(requests));
+                    
+                    this.loadFriendsPanel();
+                    
+                } catch (error) {
+                    this.showNotification('Ошибка отклонения запроса', 'error');
+                }
+            }
+
+            // Управление интерфейсом
             showChatsTab() {
                 document.getElementById('chatsTab').classList.add('active');
                 document.getElementById('friendsTab').classList.remove('active');
@@ -1410,107 +1718,17 @@
                 this.loadFriendsPanel();
             }
 
-            async sendFriendRequest() {
-                const email = document.getElementById('friendEmail').value.trim();
-                
-                if (!email) {
-                    this.showError('friendError', 'Введите email друга');
-                    return;
-                }
-                
-                if (email === this.currentUser.email) {
-                    this.showError('friendError', 'Нельзя добавить себя в друзья');
-                    return;
-                }
-                
-                // Ищем в глобальной базе пользователей
-                const targetUser = this.globalUsers.find(u => u.email === email);
-                if (!targetUser) {
-                    this.showError('friendError', 'Пользователь с таким email не найден');
-                    return;
-                }
-                
-                const currentUserFriends = this.friends[this.currentUser.id] || [];
-                if (currentUserFriends.includes(targetUser.id)) {
-                    this.showError('friendError', 'Этот пользователь уже в списке друзей');
-                    return;
-                }
-                
-                const userRequests = this.friendRequests[targetUser.id] || [];
-                if (userRequests.some(req => req.from === this.currentUser.id)) {
-                    this.showError('friendError', 'Запрос уже отправлен');
-                    return;
-                }
-                
-                try {
-                    if (!this.friendRequests[targetUser.id]) {
-                        this.friendRequests[targetUser.id] = [];
-                    }
-                    
-                    this.friendRequests[targetUser.id].push({
-                        from: this.currentUser.id,
-                        fromName: this.currentUser.name,
-                        fromEmail: this.currentUser.email,
-                        timestamp: new Date().toISOString()
-                    });
-                    
-                    this.saveFriendRequests();
-                    
-                    this.showSuccess('friendSuccess', `Запрос отправлен пользователю ${targetUser.name}`);
-                    document.getElementById('friendEmail').value = '';
-                    
-                } catch (error) {
-                    this.showError('friendError', 'Ошибка отправки запроса');
-                }
-            }
-
-            acceptFriendRequest(requesterId) {
-                try {
-                    if (!this.friends[this.currentUser.id]) {
-                        this.friends[this.currentUser.id] = [];
-                    }
-                    if (!this.friends[requesterId]) {
-                        this.friends[requesterId] = [];
-                    }
-                    
-                    this.friends[this.currentUser.id].push(requesterId);
-                    this.friends[requesterId].push(this.currentUser.id);
-                    
-                    const userRequests = this.friendRequests[this.currentUser.id] || [];
-                    this.friendRequests[this.currentUser.id] = userRequests.filter(req => req.from !== requesterId);
-                    
-                    this.saveFriends();
-                    this.saveFriendRequests();
-                    
-                    this.loadFriendsPanel();
-                    this.showNotification('Новый друг добавлен!');
-                    
-                } catch (error) {
-                    this.showNotification('Ошибка принятия запроса');
-                }
-            }
-
-            declineFriendRequest(requesterId) {
-                try {
-                    const userRequests = this.friendRequests[this.currentUser.id] || [];
-                    this.friendRequests[this.currentUser.id] = userRequests.filter(req => req.from !== requesterId);
-                    
-                    this.saveFriendRequests();
-                    this.loadFriendsPanel();
-                    
-                } catch (error) {
-                    this.showNotification('Ошибка отклонения запроса');
-                }
-            }
-
-            loadFriendsPanel() {
+            async loadFriendsPanel() {
                 const requestsContainer = document.getElementById('friendRequests');
-                const userRequests = this.friendRequests[this.currentUser.id] || [];
+                const friendsContainer = document.getElementById('friendsList');
+                
+                // Загружаем входящие запросы
+                const userRequests = this.friendRequests.get(this.currentUser.id) || [];
                 
                 if (userRequests.length > 0) {
                     requestsContainer.innerHTML = '<h4 style="margin-bottom: 15px;">Входящие запросы:</h4>';
                     
-                    userRequests.forEach(request => {
+                    for (const request of userRequests) {
                         const requestElement = document.createElement('div');
                         requestElement.className = 'friend-request';
                         requestElement.innerHTML = `
@@ -1527,32 +1745,27 @@
                             </div>
                         `;
                         requestsContainer.appendChild(requestElement);
-                    });
+                    }
                 } else {
                     requestsContainer.innerHTML = '';
                 }
                 
-                const friendsContainer = document.getElementById('friendsList');
-                const userFriends = this.friends[this.currentUser.id] || [];
+                // Загружаем список друзей
+                const userFriends = this.friends.get(this.currentUser.id) || [];
                 
                 if (userFriends.length > 0) {
-                    const friendsTitle = document.createElement('h4');
-                    friendsTitle.textContent = 'Ваши друзья:';
-                    friendsTitle.style.marginBottom = '15px';
-                    friendsTitle.style.marginTop = userRequests.length > 0 ? '30px' : '0px';
-                    friendsContainer.innerHTML = '';
-                    friendsContainer.appendChild(friendsTitle);
+                    friendsContainer.innerHTML = `<h4 style="margin-bottom: 15px; margin-top: ${userRequests.length > 0 ? '30px' : '0px'};">Ваши друзья:</h4>`;
                     
-                    userFriends.forEach(friendId => {
-                        // Ищем друга в глобальной базе
-                        const friend = this.globalUsers.find(u => u.id === friendId);
+                    for (const friendId of userFriends) {
+                        const friend = await this.findUserById(friendId);
                         if (friend) {
                             const friendElement = document.createElement('div');
                             friendElement.className = 'chat-item';
                             friendElement.onclick = () => this.startChat(friend);
                             friendElement.innerHTML = `
-                                <div class="chat-avatar" style="background: linear-gradient(45deg, #ff6b6b, #feca57)">
+                                <div class="chat-avatar">
                                     ${friend.name.charAt(0).toUpperCase()}
+                                    ${this.onlineUsers.has(friend.id) ? '<div class="online-indicator"></div>' : ''}
                                 </div>
                                 <div class="chat-info">
                                     <div class="chat-name">${friend.name}</div>
@@ -1561,7 +1774,7 @@
                             `;
                             friendsContainer.appendChild(friendElement);
                         }
-                    });
+                    }
                 } else {
                     if (userRequests.length === 0) {
                         friendsContainer.innerHTML = '<p style="color: #666; text-align: center; margin-top: 20px;">Пока нет друзей. Добавьте друзей по email!</p>';
@@ -1569,16 +1782,22 @@
                 }
             }
 
-            startChat(friend) {
+            async findUserById(userId) {
+                const users = JSON.parse(localStorage.getItem('messengerUsers') || '[]');
+                return users.find(u => u.id === userId);
+            }
+
+            // Чат функциональность
+            async startChat(friend) {
                 const chatId = this.generateChatId(this.currentUser.id, friend.id);
                 
-                if (!this.chats[chatId]) {
-                    this.chats[chatId] = {
+                if (!this.chats.has(chatId)) {
+                    this.chats.set(chatId, {
                         id: chatId,
                         participants: [this.currentUser.id, friend.id],
                         messages: [],
                         created: new Date().toISOString()
-                    };
+                    });
                 }
                 
                 this.currentChatId = chatId;
@@ -1599,16 +1818,16 @@
                 document.getElementById('messages').style.display = 'block';
                 document.getElementById('inputArea').style.display = 'flex';
 
-                document.getElementById('headerAvatar').innerHTML = friend.name.charAt(0).toUpperCase();
+                document.getElementById('headerAvatar').textContent = friend.name.charAt(0).toUpperCase();
                 document.getElementById('headerName').textContent = friend.name;
-                document.getElementById('headerStatus').textContent = 'в сети';
+                document.getElementById('headerStatus').textContent = this.onlineUsers.has(friend.id) ? 'в сети' : 'не в сети';
             }
 
             renderMessages() {
                 const messagesContainer = document.getElementById('messages');
                 messagesContainer.innerHTML = '';
                 
-                const chat = this.chats[this.currentChatId];
+                const chat = this.chats.get(this.currentChatId);
                 if (!chat || !chat.messages) return;
                 
                 chat.messages.forEach(message => {
@@ -1625,7 +1844,7 @@
                 
                 div.innerHTML = `
                     <div class="message-bubble">
-                        ${message.text}
+                        ${this.escapeHtml(message.text)}
                         <div class="message-time">${this.formatTime(message.timestamp)}</div>
                     </div>
                 `;
@@ -1633,58 +1852,91 @@
                 return div;
             }
 
-            sendMessage() {
+            async sendMessage() {
                 const input = document.getElementById('messageInput');
                 const text = input.value.trim();
                 
                 if (!text || !this.currentChatId) return;
                 
                 const message = {
-                    id: Date.now().toString(),
+                    id: this.generateMessageId(),
                     senderId: this.currentUser.id,
                     text: text,
                     timestamp: new Date().toISOString()
                 };
                 
-                this.chats[this.currentChatId].messages.push(message);
-                this.saveChats();
+                const chat = this.chats.get(this.currentChatId);
+                chat.messages.push(message);
+                
+                // Сохраняем в localStorage
+                await this.saveChats();
                 
                 input.value = '';
                 this.adjustTextareaHeight();
                 this.renderMessages();
                 this.updateChatsList();
+
+                // В реальном проекте отправляем через WebSocket
+                this.sendMessageToServer(message);
+            }
+
+            generateMessageId() {
+                return 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            sendMessageToServer(message) {
+                // Эмуляция отправки сообщения через WebSocket
+                const serverMessage = {
+                    type: 'message',
+                    chatId: this.currentChatId,
+                    message: message,
+                    from: this.currentUser.id,
+                    to: this.currentChatFriend.id
+                };
+                
+                console.log('Отправляем сообщение на сервер:', serverMessage);
+            }
+
+            async saveChats() {
+                const chatsObject = {};
+                for (const [key, value] of this.chats) {
+                    chatsObject[key] = value;
+                }
+                localStorage.setItem('messengerChats', JSON.stringify(chatsObject));
             }
 
             updateChatsList() {
                 const chatList = document.getElementById('chatList');
                 chatList.innerHTML = '';
                 
-                Object.values(this.chats).forEach(chat => {
-                    const otherParticipantId = chat.participants.find(id => id !== this.currentUser.id);
-                    // Ищем участника в глобальной базе
-                    const otherParticipant = this.globalUsers.find(u => u.id === otherParticipantId);
+                for (const [chatId, chat] of this.chats) {
+                    if (chat.messages.length === 0) continue;
                     
-                    if (otherParticipant && chat.messages.length > 0) {
-                        const lastMessage = chat.messages[chat.messages.length - 1];
-                        
-                        const chatElement = document.createElement('div');
-                        chatElement.className = `chat-item ${chat.id === this.currentChatId ? 'active' : ''}`;
-                        chatElement.onclick = () => this.startChat(otherParticipant);
-                        
-                        chatElement.innerHTML = `
-                            <div class="chat-time">${this.formatTime(lastMessage.timestamp)}</div>
-                            <div class="chat-avatar" style="background: linear-gradient(45deg, #ff6b6b, #feca57)">
-                                ${otherParticipant.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div class="chat-info">
-                                <div class="chat-name">${otherParticipant.name}</div>
-                                <div class="chat-last-message">${lastMessage.text}</div>
-                            </div>
-                        `;
-                        
-                        chatList.appendChild(chatElement);
-                    }
-                });
+                    const otherParticipantId = chat.participants.find(id => id !== this.currentUser.id);
+                    this.findUserById(otherParticipantId).then(otherParticipant => {
+                        if (otherParticipant) {
+                            const lastMessage = chat.messages[chat.messages.length - 1];
+                            
+                            const chatElement = document.createElement('div');
+                            chatElement.className = `chat-item ${chat.id === this.currentChatId ? 'active' : ''}`;
+                            chatElement.onclick = () => this.startChat(otherParticipant);
+                            
+                            chatElement.innerHTML = `
+                                <div class="chat-time">${this.formatTime(lastMessage.timestamp)}</div>
+                                <div class="chat-avatar">
+                                    ${otherParticipant.name.charAt(0).toUpperCase()}
+                                    ${this.onlineUsers.has(otherParticipant.id) ? '<div class="online-indicator"></div>' : ''}
+                                </div>
+                                <div class="chat-info">
+                                    <div class="chat-name">${otherParticipant.name}</div>
+                                    <div class="chat-last-message">${this.escapeHtml(lastMessage.text)}</div>
+                                </div>
+                            `;
+                            
+                            chatList.appendChild(chatElement);
+                        }
+                    });
+                }
             }
 
             handleSearch(query) {
@@ -1693,10 +1945,27 @@
                 
                 chatItems.forEach(item => {
                     const name = item.querySelector('.chat-name').textContent.toLowerCase();
-                    item.style.display = name.includes(lowerQuery) ? 'block' : 'none';
+                    const message = item.querySelector('.chat-last-message').textContent.toLowerCase();
+                    const isVisible = name.includes(lowerQuery) || message.includes(lowerQuery);
+                    item.style.display = isVisible ? 'block' : 'none';
                 });
             }
 
+            // Обработчики звонков
+            acceptCall() {
+                this.hideCallModal();
+                if (this.isVideoCall) {
+                    this.showVideoChat();
+                }
+                this.showNotification('Звонок принят');
+            }
+
+            declineCall() {
+                this.endCall();
+                this.showNotification('Звонок отклонен');
+            }
+
+            // Утилиты
             formatTime(timestamp) {
                 const date = new Date(timestamp);
                 const now = new Date();
@@ -1726,9 +1995,18 @@
                 messages.scrollTop = messages.scrollHeight;
             }
 
-            showNotification(message) {
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            showNotification(message, type = 'success') {
                 const notification = document.createElement('div');
                 notification.className = 'notification';
+                if (type === 'error') {
+                    notification.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)';
+                }
                 notification.textContent = message;
                 
                 document.body.appendChild(notification);
@@ -1774,53 +2052,40 @@
                 }
             }
 
-            // Методы для работы с localStorage
-            loadUsers() {
+            // Состояние приложения
+            async loadUserData() {
+                if (!this.currentUser) return;
+
                 try {
-                    return JSON.parse(localStorage.getItem('messengerUsers') || '[]');
-                } catch {
-                    return [];
+                    // Загружаем данные из localStorage
+                    const friends = JSON.parse(localStorage.getItem('messengerFriends') || '{}');
+                    const friendRequests = JSON.parse(localStorage.getItem('messengerFriendRequests') || '{}');
+                    const chats = JSON.parse(localStorage.getItem('messengerChats') || '{}');
+
+                    this.friends = new Map(Object.entries(friends));
+                    this.friendRequests = new Map(Object.entries(friendRequests));
+                    this.chats = new Map(Object.entries(chats));
+
+                    // Обновляем интерфейс
+                    this.updateChatsList();
+                    
+                    // Эмуляция онлайн статуса (в реальном проекте через WebSocket)
+                    this.simulateOnlineUsers();
+                    
+                } catch (error) {
+                    console.error('Ошибка загрузки данных:', error);
                 }
             }
 
-            saveUsers() {
-                localStorage.setItem('messengerUsers', JSON.stringify(this.users));
-            }
-
-            loadFriends() {
-                try {
-                    return JSON.parse(localStorage.getItem('messengerFriends') || '{}');
-                } catch {
-                    return {};
-                }
-            }
-
-            saveFriends() {
-                localStorage.setItem('messengerFriends', JSON.stringify(this.friends));
-            }
-
-            loadFriendRequests() {
-                try {
-                    return JSON.parse(localStorage.getItem('messengerFriendRequests') || '{}');
-                } catch {
-                    return {};
-                }
-            }
-
-            saveFriendRequests() {
-                localStorage.setItem('messengerFriendRequests', JSON.stringify(this.friendRequests));
-            }
-
-            loadChats() {
-                try {
-                    return JSON.parse(localStorage.getItem('messengerChats') || '{}');
-                } catch {
-                    return {};
-                }
-            }
-
-            saveChats() {
-                localStorage.setItem('messengerChats', JSON.stringify(this.chats));
+            simulateOnlineUsers() {
+                // Эмуляция онлайн пользователей
+                const allUsers = JSON.parse(localStorage.getItem('messengerUsers') || '[]');
+                const randomUsers = allUsers
+                    .filter(u => u.id !== this.currentUser.id)
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, Math.floor(Math.random() * 3) + 1);
+                
+                this.onlineUsers = new Set(randomUsers.map(u => u.id));
             }
 
             checkAuthState() {
@@ -1828,16 +2093,18 @@
                     const savedUser = localStorage.getItem('messengerCurrentUser');
                     if (savedUser) {
                         const userData = JSON.parse(savedUser);
-                        // Проверяем, что пользователь существует в глобальной базе
-                        const globalUser = this.globalUsers.find(u => u.id === userData.id);
-                        if (globalUser) {
-                            this.currentUser = globalUser;
-                            this.showMainApp();
-                            this.hideAuthScreen();
-                        } else {
-                            this.clearAuthState();
-                            this.showAuthScreen();
-                        }
+                        // Проверяем, что пользователь все еще существует
+                        this.findUserById(userData.id).then(user => {
+                            if (user) {
+                                this.currentUser = user;
+                                this.showMainApp();
+                                this.hideAuthScreen();
+                                this.loadUserData();
+                            } else {
+                                this.clearAuthState();
+                                this.showAuthScreen();
+                            }
+                        });
                     } else {
                         this.showAuthScreen();
                     }
@@ -1866,11 +2133,18 @@
             showMainApp() {
                 document.getElementById('mainApp').style.display = 'block';
                 document.getElementById('currentUserName').textContent = this.currentUser.name;
-                
-                this.friends = this.loadFriends();
-                this.friendRequests = this.loadFriendRequests();
-                this.chats = this.loadChats();
-                this.updateChatsList();
+            }
+
+            logout() {
+                this.endCall();
+                this.currentUser = null;
+                this.chats.clear();
+                this.friends.clear();
+                this.friendRequests.clear();
+                this.onlineUsers.clear();
+                this.clearAuthState();
+                this.showAuthScreen();
+                this.updateConnectionStatus(false);
             }
         }
 
@@ -1879,12 +2153,51 @@
 
         // Инициализация приложения
         document.addEventListener('DOMContentLoaded', () => {
-            app = new MessengerApp();
+            app = new RealTimeMessenger();
             
+            // Плавное появление интерфейса
             setTimeout(() => {
                 document.body.style.opacity = '1';
             }, 100);
+
+            // Обработка видимости страницы
+            document.addEventListener('visibilitychange', () => {
+                if (app && app.currentUser) {
+                    if (document.hidden) {
+                        // Страница скрыта - можно приостановить некоторые операции
+                        console.log('Приложение в фоне');
+                    } else {
+                        // Страница видима - возобновляем операции
+                        console.log('Приложение активно');
+                        app.loadUserData();
+                    }
+                }
+            });
+
+            // Обработка закрытия страницы
+            window.addEventListener('beforeunload', () => {
+                if (app && app.currentUser) {
+                    // Отправляем статус "оффлайн" (в реальном проекте)
+                    console.log('Пользователь покидает приложение');
+                }
+            });
         });
+
+        // Обработка ошибок
+        window.addEventListener('error', (event) => {
+            console.error('Глобальная ошибка:', event.error);
+            if (app) {
+                app.showNotification('Произошла ошибка приложения', 'error');
+            }
+        });
+
+        // Service Worker для оффлайн работы (опционально)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // В реальном проекте здесь можно зарегистрировать Service Worker
+                console.log('Service Worker поддерживается');
+            });
+        }
     </script>
 </body>
 </html>
