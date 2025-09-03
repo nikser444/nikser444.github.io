@@ -16,7 +16,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
             overflow: hidden;
-            opacity: 0;
+            opacity: 1;
             transition: opacity 0.5s ease;
         }
 
@@ -1062,7 +1062,7 @@
             <div class="contact-form">
                 <input type="text" class="contact-input" id="contactSearch" placeholder="Введите email или никнейм">
                 <div class="contact-search-results" id="searchResults"></div>
-                <button type="button" class="auth-button" onclick="app.searchContacts()">Найти</button>
+                <button type="button" class="auth-button" id="searchContactsBtn">Найти</button>
             </div>
         </div>
     </div>
@@ -1200,7 +1200,8 @@
                 this.currentChat = null;
                 this.currentTheme = 'light';
                 this.authenticated = false;
-                this.registeredUsers = new Map(); // Симуляция базы пользователей
+                this.registeredUsers = new Map();
+                this.loadUsersFromStorage(); // Загружаем пользователей из localStorage
                 
                 this.init();
             }
@@ -1210,45 +1211,21 @@
                 this.bindEvents();
                 this.loadTheme();
                 this.showAuthScreen();
-                this.initSampleUsers(); // Добавляем тестовых пользователей
             }
 
-            initSampleUsers() {
-                // Предварительно зарегистрированные пользователи для тестирования
-                this.registeredUsers.set('test@example.com', {
-                    password: 'password',
-                    username: 'TestUser',
-                    email: 'test@example.com',
-                    id: 'user1'
-                });
-                
-                this.registeredUsers.set('alice@example.com', {
-                    password: '123456',
-                    username: 'Alice',
-                    email: 'alice@example.com',
-                    id: 'user2'
-                });
+            loadUsersFromStorage() {
+                const users = localStorage.getItem('messengerUsers');
+                if (users) {
+                    const parsedUsers = JSON.parse(users);
+                    parsedUsers.forEach(user => {
+                        this.registeredUsers.set(user.email, user);
+                    });
+                }
+            }
 
-                this.registeredUsers.set('bob@example.com', {
-                    password: '123456',
-                    username: 'Bob',
-                    email: 'bob@example.com',
-                    id: 'user3'
-                });
-
-                this.registeredUsers.set('charlie@example.com', {
-                    password: '123456',
-                    username: 'Charlie',
-                    email: 'charlie@example.com',
-                    id: 'user4'
-                });
-
-                this.registeredUsers.set('diana@example.com', {
-                    password: '123456',
-                    username: 'Diana',
-                    email: 'diana@example.com',
-                    id: 'user5'
-                });
+            saveUsersToStorage() {
+                const users = Array.from(this.registeredUsers.values());
+                localStorage.setItem('messengerUsers', JSON.stringify(users));
             }
 
             bindElements() {
@@ -1365,7 +1342,6 @@
                         };
                         this.authenticated = true;
                         this.showMessengerInterface();
-                        this.loadSampleData();
                     } else {
                         this.showError('loginError', 'Неверный email или пароль');
                     }
@@ -1415,6 +1391,7 @@
                     };
                     
                     this.registeredUsers.set(email, newUser);
+                    this.saveUsersToStorage();
                     
                     this.currentUser = { 
                         id: newUser.id, 
@@ -1424,7 +1401,6 @@
                     };
                     this.authenticated = true;
                     this.showMessengerInterface();
-                    this.loadSampleData();
                     
                 } catch (error) {
                     this.showError('registerError', error.message);
@@ -1447,10 +1423,10 @@
                 document.getElementById(modalId).classList.remove('active');
             }
 
-            async searchContacts() {
+            searchContacts() {
                 const query = document.getElementById('contactSearch').value.trim();
                 if (!query) {
-                    document.getElementById('searchResults').innerHTML = '<div style="padding: 10px; text-align: center; color: #999;">Введите email или никнейм для поиска</div>';
+                    document.getElementById('searchResults').innerHTML = '<div style="padding: 10px; text-align: center; color: #999;">Введите email или имя пользователя</div>';
                     return;
                 }
 
@@ -1460,31 +1436,50 @@
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 const foundUsers = [];
+                const queryLower = query.toLowerCase();
                 
                 // Ищем среди всех зарегистрированных пользователей
-                this.registeredUsers.forEach((user, email) => {
-                    // Исключаем текущего пользователя и уже добавленных в контакты
-                    if (user.id !== this.currentUser.id && !this.chats[user.id]) {
-                        const matchesEmail = email.toLowerCase().includes(query.toLowerCase());
-                        const matchesUsername = user.username.toLowerCase().includes(query.toLowerCase());
+                for (const [email, user] of this.registeredUsers.entries()) {
+                    // Исключаем текущего пользователя
+                    if (user.id !== this.currentUser.id) {
+                        const matchesEmail = email.toLowerCase().includes(queryLower);
+                        const matchesUsername = user.username.toLowerCase().includes(queryLower);
                         
                         if (matchesEmail || matchesUsername) {
-                            foundUsers.push(user);
+                            foundUsers.push({
+                                id: user.id,
+                                username: user.username,
+                                email: email
+                            });
                         }
                     }
-                });
+                }
 
                 if (foundUsers.length === 0) {
-                    results.innerHTML = '<div style="padding: 10px; text-align: center; color: #999;">Пользователи не найдены. Попробуйте: alice@example.com, bob@example.com, charlie@example.com, diana@example.com</div>';
+                    results.innerHTML = `
+                        <div style="padding: 10px; text-align: center; color: #999;">
+                            Пользователь не найден. Убедитесь, что:
+                            <ul style="text-align: left; margin-top: 10px;">
+                                <li>Пользователь зарегистрирован в системе</li>
+                                <li>Вы правильно ввели email или имя</li>
+                            </ul>
+                        </div>`;
                     return;
                 }
 
-                results.innerHTML = foundUsers.map(user => `
+                results.innerHTML = foundUsers.map(user => {
+                    const alreadyAdded = this.chats[user.id] ? 
+                        '<span style="color: #00d4aa; font-size: 12px;">(уже в контактах)</span>' : '';
+                    
+                    return `
                     <div class="contact-result" onclick="app.addContact('${user.id}', '${user.username}', '${user.email}')">
-                        <div style="font-weight: 600; margin-bottom: 4px;">${user.username}</div>
+                        <div style="font-weight: 600; margin-bottom: 4px;">
+                            ${user.username} ${alreadyAdded}
+                        </div>
                         <div style="font-size: 14px; color: #666;">${user.email}</div>
                     </div>
-                `).join('');
+                    `;
+                }).join('');
             }
 
             addContact(userId, username, email) {
@@ -1546,6 +1541,8 @@
 
             initiateCall(type) {
                 const chat = this.chats[this.currentChat];
+                if (!chat) return;
+                
                 const callModal = document.getElementById('callModal');
                 const callAvatar = document.getElementById('callAvatar');
                 const callName = document.getElementById('callName');
@@ -1554,7 +1551,7 @@
                 callAvatar.textContent = chat.name.charAt(0).toUpperCase();
                 callAvatar.style.background = chat.avatar;
                 callName.textContent = chat.name;
-                callStatus.textContent = type === 'video' ? 'Видеозвонок...' : 'Голосовой звонок...';
+                callStatus.textContent = type === 'video' ? 'Звонок...' : 'Звонок...';
 
                 callModal.classList.add('active');
 
@@ -1581,21 +1578,15 @@
                     this.renderMessages();
                 }
                 this.renderChatList();
-
-                // Автоматически завершаем звонок через 5 секунд для демонстрации
-                setTimeout(() => {
-                    this.endCall();
-                }, 5000);
             }
 
             acceptCall() {
                 const callStatus = document.getElementById('callStatus');
                 callStatus.textContent = 'Разговор...';
-                setTimeout(() => this.endCall(), 3000);
             }
 
             declineCall() {
-                this.endCall();
+                document.getElementById('callModal').classList.remove('active');
             }
 
             endCall() {
@@ -1710,45 +1701,6 @@
                 this.showAuthScreen();
             }
 
-            loadSampleData() {
-                const sampleChats = [
-                    {
-                        id: 'alice',
-                        name: 'Алиса Петрова',
-                        email: 'alice@example.com',
-                        lastMessage: 'Привет! Как твои дела?',
-                        time: '14:30',
-                        unreadCount: 2,
-                        online: true,
-                        avatar: 'linear-gradient(45deg, #ff6b6b, #feca57)',
-                        messages: [
-                            { text: 'Привет! Как дела?', sent: false, time: '14:25', status: 'read' },
-                            { text: 'Привет! Как твои дела?', sent: false, time: '14:30', status: 'delivered' }
-                        ]
-                    },
-                    {
-                        id: 'bob',
-                        name: 'Боб Иванов',
-                        email: 'bob@example.com',
-                        lastMessage: 'Встретимся завтра в кафе!',
-                        time: '12:15',
-                        unreadCount: 0,
-                        online: false,
-                        avatar: 'linear-gradient(45deg, #667eea, #764ba2)',
-                        messages: [
-                            { text: 'Встречаемся завтра в 10?', sent: true, time: '12:10', status: 'read' },
-                            { text: 'Конечно! Встретимся завтра в кафе!', sent: false, time: '12:15', status: 'read' }
-                        ]
-                    }
-                ];
-
-                sampleChats.forEach(chat => {
-                    this.chats[chat.id] = chat;
-                    this.contacts[chat.id] = { username: chat.name, email: chat.email };
-                });
-
-                this.renderChatList();
-            }
 
             renderChatList() {
                 this.chatList.innerHTML = '';
@@ -1906,7 +1858,7 @@
                 this.renderMessages();
                 this.renderChatList();
 
-                // Симуляция статусов доставки
+                // Статусы доставки
                 setTimeout(() => {
                     message.status = 'delivered';
                     this.renderMessages();
@@ -1915,52 +1867,7 @@
                 setTimeout(() => {
                     message.status = 'read';
                     this.renderMessages();
-                }, 2000 + Math.random() * 3000);
-
-                // Симуляция автоответа (только для обычных чатов, не групповых)
-                if (!this.chats[this.currentChat].isGroup) {
-                    setTimeout(() => this.simulateResponse(), 2000 + Math.random() * 4000);
-                }
-            }
-
-            simulateResponse() {
-                if (!this.currentChat || !this.authenticated) return;
-
-                const responses = [
-                    'Понятно!',
-                    'Интересно, расскажи больше',
-                    'Согласен с тобой',
-                    'Хорошая идея!',
-                    'Спасибо за информацию',
-                    'Да, точно!',
-                    'Нужно подумать об этом',
-                    'Отличная мысль!',
-                    'Ахах, смешно!',
-                    'Круто!',
-                    'Не знал об этом',
-                    'Давай встретимся!'
-                ];
-
-                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                const now = new Date();
-                const time = now.toLocaleTimeString('ru-RU', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-
-                const message = {
-                    text: randomResponse,
-                    sent: false,
-                    time,
-                    status: 'delivered'
-                };
-
-                this.chats[this.currentChat].messages.push(message);
-                this.chats[this.currentChat].lastMessage = randomResponse;
-                this.chats[this.currentChat].time = time;
-
-                this.renderMessages();
-                this.renderChatList();
+                }, 2000);
             }
 
             // Управление темами
@@ -2020,13 +1927,11 @@
         }
 
         // Создаем глобальную переменную для доступа из HTML
-        const app = new MessengerPro();
-        
+        let app;
+
         // Анимация загрузки
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                document.body.style.opacity = '1';
-            }, 100);
+            app = new MessengerPro();
         });
     </script>
 </body>
