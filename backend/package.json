@@ -1,0 +1,58 @@
+{
+  "name": "messenger-backend",
+  "version": "1.0.0",
+  "description": "Backend для мессенджера с поддержкой WebRTC звонков",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "jest",
+    "migration:run": "ts-node src/utils/runMigrations.ts",
+    "seed": "ts-node database/seeds/runSeeds.ts"
+  },
+  "keywords": ["messenger", "websocket", "webrtc", "chat"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "redis": "^4.6.8",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.4",
+    "joi": "^17.9.2",
+    "uuid": "^9.0.0",
+    "winston": "^3.10.0",
+    "dotenv": "^16.3.1",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^6.8.1",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.4.9",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/pg": "^8.10.2",
+    "@types/multer": "^1.4.7",
+    "@types/nodemailer": "^6.4.9",
+    "@types/uuid": "^9.0.2",
+    "@types/cors": "^2.8.13",
+    "@types/compression": "^1.7.2",
+    "@types/morgan": "^1.9.4",
+    "typescript": "^5.1.6",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "@types/jest": "^29.5.3",
+    "jest": "^29.6.2",
+    "ts-jest": "^29.1.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
