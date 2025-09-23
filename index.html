@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проект домика из бруса</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #8b4513;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .tab {
+            background: #ecf0f1;
+            border: none;
+            padding: 12px 25px;
+            margin: 0 5px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .tab.active {
+            background: #8b4513;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+        }
+        
+        .tab:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .house-3d {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 70%, #8FBC8F 100%);
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
+        }
+        
+        .house {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            perspective: 1000px;
+        }
+        
+        .house-main {
+            width: 300px;
+            height: 180px;
+            background: linear-gradient(45deg, #D2B48C, #DDD0C0);
+            position: relative;
+            transform-style: preserve-3d;
+            animation: houseFloat 6s ease-in-out infinite;
+        }
+        
+        @keyframes houseFloat {
+            0%, 100% { transform: rotateY(-5deg) rotateX(2deg); }
+            50% { transform: rotateY(5deg) rotateX(-2deg); }
+        }
+        
+        .house-main::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -20px;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(45deg, #B8860B, #CD853F);
+            transform: skewY(-10deg);
+        }
+        
+        .roof {
+            position: absolute;
+            top: -60px;
+            left: -30px;
+            width: 0;
+            height: 0;
+            border-left: 180px solid transparent;
+            border-right: 180px solid transparent;
+            border-bottom: 80px solid #8B4513;
+            filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.3));
+        }
+        
+        .roof::after {
+            content: '';
+            position: absolute;
+            top: 80px;
+            left: -15px;
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 165px solid transparent;
+            border-bottom: 40px solid #A0522D;
+        }
+        
+        .window {
+            position: absolute;
+            width: 50px;
+            height: 60px;
+            background: #87CEEB;
+            border: 3px solid #8B4513;
+            top: 40px;
+            border-radius: 5px;
+        }
+        
+        .window1 { left: 30px; }
+        .window2 { right: 30px; }
+        
+        .window::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: #8B4513;
+            transform: translate(-50%, -50%);
+        }
+        
+        .window::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #8B4513;
+            transform: translate(-50%, -50%);
+        }
+        
+        .door {
+            position: absolute;
+            width: 40px;
+            height: 80px;
+            background: #8B4513;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px 5px 0 0;
+            border: 2px solid #654321;
+        }
+        
+        .door::before {
+            content: '';
+            position: absolute;
+            right: 5px;
+            top: 35px;
+            width: 4px;
+            height: 4px;
+            background: #FFD700;
+            border-radius: 50%;
+        }
+        
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            animation: cloudFloat 20s linear infinite;
+        }
+        
+        .cloud1 {
+            width: 80px;
+            height: 30px;
+            top: 50px;
+            left: -100px;
+        }
+        
+        .cloud2 {
+            width: 60px;
+            height: 25px;
+            top: 80px;
+            left: -80px;
+            animation-delay: -10s;
+        }
+        
+        @keyframes cloudFloat {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(100vw + 100px)); }
+        }
+        
+        .floor-plan {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .plan {
+            background: #f8f9fa;
+            border: 2px solid #8b4513;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .plan h3 {
+            text-align: center;
+            color: #8b4513;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .room {
+            background: #e8f4fd;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .room:hover {
+            background: #d4edda;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .spec-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+        
+        .spec-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .spec-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .spec-list {
+            list-style: none;
+        }
+        
+        .spec-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .spec-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .material-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-left: 5px solid #8b4513;
+            transition: all 0.3s ease;
+        }
+        
+        .material-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .estimate-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .estimate-table th {
+            background: #8b4513;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .estimate-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .estimate-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .total-row {
+            background: #e8f5e8 !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .timeline {
+            position: relative;
+        }
+        
+        .timeline-item {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            border-left: 5px solid #8b4513;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .timeline-item h4 {
+            color: #8b4513;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .floor-plan {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                margin: 5px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .house-main {
+                width: 250px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Проект домика из бруса</h1>
+            <p>Уютный экологичный дом для комфортной жизни</p>
+        </div>
+        
+        <div class="house-3d">
+            <div class="cloud cloud1"></div>
+            <div class="cloud cloud2"></div>
+            <div class="house">
+                <div class="house-main">
+                    <div class="roof"></div>
+                    <div class="window window1"></div>
+                    <div class="window window2"></div>
+                    <div class="door"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('overview')">Обзор</button>
+            <button class="tab" onclick="showTab('plans')">Планировка</button>
+            <button class="tab" onclick="showTab('specs')">Характеристики</button>
+            <button class="tab" onclick="showTab('materials')">Материалы</button>
+            <button class="tab" onclick="showTab('estimate')">Смета</button>
+            <button class="tab" onclick="showTab('timeline')">Этапы строительства</button>
+        </div>
+        
+        <div id="overview" class="tab-content active">
+            <h2>Общая информация о проекте</h2>
+            <p>Представляем вашему вниманию проект комфортабельного домика из бруса площадью 80 м². Дом спроектирован с учетом современных требований к энергоэффективности и экологичности.</p>
+            
+            <div class="specs-grid">
+                <div class="spec-card">
+                    <h3>🏗️ Основные параметры</h3>
+                    <ul class="spec-list">
+                        <li><span>Общая площадь:</span><span>80 м²</span></li>
+                        <li><span>Жилая площадь:</span><span>60 м²</span></li>
+                        <li><span>Этажность:</span><span>1 этаж</span></li>
+                        <li><span>Высота потолков:</span><span>2.7 м</span></li>
+                    </ul>
+                </div>
+                
+                <div class="spec-card">
+                    <h3>🏠 Планировка</h3>
+                    <ul class="spec-list">
+                        <li><span>Гостиная:</span><span>25 м²</span></li>
+                        <li><span>Спальня:</span><span>15 м²</span></li>
+                        <li><span>Кухня:</span><span>12 м²</span></li>
+                        <li><span>Санузел:</span><span>4 м²</span></li>
+                        <li><span>Прихожая:</span><span>4 м²</span></li>
+                        <li><span>Терраса:</span><span>20 м²</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div id="plans" class="tab-content">
+            <h2>Планировка дома</h2>
+            <div class="floor-plan">
+                <div class="plan">
+                    <h3>Первый этаж</h3>
+                    <div class="room" style="height: 80px; background: #ffebee;">Гостиная<br>25 м²</div>
+                    <div style="display: flex; gap: 10px;">
+                        <div class="room" style="flex: 1; background: #e8f5e8;">Кухня<br>12 м²</div>
+                        <div class="room" style="flex: 1; background: #fff3e0;">Спальня<br>15 м²</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <div class="room" style="flex: 1; background: #f3e5f5;">Санузел<br>4 м²</div>
+                        <div class="room" style="flex: 1; background: #e1f5fe;">Прихожая<br>4 м²</div>
+                    </div>
+                </div>
+                
+                <div class="plan">
+                    <h3>Экспликация помещений</h3>
+                    <div class="room">Терраса - 20 м² (крытая)</div>
+                    <div class="room">Котельная - 6 м²</div>
+                    <div class="room">Кладовая - 4 м²</div>
+                    <div class="room">Веранда - 10 м² (открытая)</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="specs" class="tab-content">
+            <h2>Технические характеристики</h2>
+            <div class="specs-grid">
+                <div class="spec-card">
+                    <h3>🔧 Конструкция</h3>
+                    <ul class="spec-list">
+                        <li><span>Фундамент:</span><span>Ленточный монолитный</span></li>
+                        <li><span>Стены:</span><span>Брус 150х150 мм</span></li>
+                        <li><span>Межэтажные перекрытия:</span><span>Деревянные балки</span></li>
+                        <li><span>Кровля:</span><span>Металлочерепица</span></li>
+                        <li><span>Утепление:</span><span>Минеральная вата 100мм</span></li>
+                    </ul>
+                </div>
+                
+                <div class="spec-card">
+                    <h3>🌡️ Инженерные системы</h3>
+                    <ul class="spec-list">
+                        <li><span>Отопление:</span><span>Электрокотел + теплый пол</span></li>
+                        <li><span>Водоснабжение:</span><span>Скважина + насосная станция</span></li>
+                        <li><span>Канализация:</span><span>Автономная септик</span></li>
+                        <li><span>Электричество:</span><span>380В, щиток на 16 автоматов</span></li>
+                    </ul>
+                </div>
+                
+                <div class="spec-card">
+                    <h3>🚪 Окна и двери</h3>
+                    <ul class="spec-list">
+                        <li><span>Окна:</span><span>ПВХ 2-камерный стеклопакет</span></li>
+                        <li><span>Входная дверь:</span><span>Металлическая утепленная</span></li>
+                        <li><span>Межкомнатные двери:</span><span>МДФ экошпон</span></li>
+                        <li><span>Фурнитура:</span><span>Европейская, антивандальная</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div id="materials" class="tab-content">
+            <h2>Материалы и технологии</h2>
+            <div class="materials-grid">
+                <div class="material-card">
+                    <h3>🌲 Основной материал - брус</h3>
+                    <p><strong>Профилированный брус 150х150 мм</strong></p>
+                    <p>Изготовлен из сосны первого сорта, естественной влажности. Обеспечивает отличную теплоизоляцию и экологичность.</p>
+                    <p><strong>Преимущества:</strong></p>
+                    <ul>
+                        <li>Натуральный материал</li>
+                        <li>Отличные теплоизоляционные свойства</li>
+                        <li>Простота монтажа</li>
+                        <li>Эстетичный внешний вид</li>
+                    </ul>
+                </div>
+                
+                <div class="material-card">
+                    <h3>🏗️ Фундамент</h3>
+                    <p><strong>Ленточный железобетонный фундамент</strong></p>
+                    <p>Глубина заложения 1.2м, ширина 400мм. Армирование прутком 12мм в два пояса.</p>
+                    <p><strong>Характеристики:</strong></p>
+                    <ul>
+                        <li>Бетон класса В15</li>
+                        <li>Гидроизоляция рубероидом</li>
+                        <li>Утепление пенополистиролом</li>
+                        <li>Отмостка шириной 1м</li>
+                    </ul>
+                </div>
+                
+                <div class="material-card">
+                    <h3>🏠 Кровля</h3>
+                    <p><strong>Металлочерепица Монтеррей</strong></p>
+                    <p>Стропильная система из бруса 150х50мм с шагом 600мм. Утепление минеральной ватой 200мм.</p>
+                    <p><strong>Комплектация:</strong></p>
+                    <ul>
+                        <li>Металлочерепица 0.5мм</li>
+                        <li>Подкровельная пленка</li>
+                        <li>Контр-обрешетка и обрешетка</li>
+                        <li>Водосточная система</li>
+                    </ul>
+                </div>
+                
+                <div class="material-card">
+                    <h3>🌡️ Утепление</h3>
+                    <p><strong>Базальтовая вата ROCKWOOL</strong></p>
+                    <p>Экологически чистый утеплитель с отличными теплоизоляционными свойствами.</p>
+                    <p><strong>Применение:</strong></p>
+                    <ul>
+                        <li>Стены: 100мм</li>
+                        <li>Кровля: 200мм</li>
+                        <li>Пол: 150мм</li>
+                        <li>Пароизоляция и ветрозащита</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div id="estimate" class="tab-content">
+            <h2>Предварительная смета строительства</h2>
+            <table class="estimate-table">
+                <thead>
+                    <tr>
+                        <th>Наименование работ</th>
+                        <th>Единица</th>
+                        <th>Количество</th>
+                        <th>Цена за ед.</th>
+                        <th>Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Земляные работы, разметка</td>
+                        <td>м²</td>
+                        <td>80</td>
+                        <td>500₽</td>
+                        <td>40,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Фундамент ленточный</td>
+                        <td>м³</td>
+                        <td>15</td>
+                        <td>8,000₽</td>
+                        <td>120,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Материал - профилированный брус</td>
+                        <td>м³</td>
+                        <td>25</td>
+                        <td>15,000₽</td>
+                        <td>375,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Сборка сруба</td>
+                        <td>м²</td>
+                        <td>80</td>
+                        <td>3,500₽</td>
+                        <td>280,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Кровельные работы с материалом</td>
+                        <td>м²</td>
+                        <td>100</td>
+                        <td>2,500₽</td>
+                        <td>250,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Окна и двери с установкой</td>
+                        <td>комплект</td>
+                        <td>1</td>
+                        <td>180,000₽</td>
+                        <td>180,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Полы (черновые и чистовые)</td>
+                        <td>м²</td>
+                        <td>60</td>
+                        <td>2,000₽</td>
+                        <td>120,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Электромонтажные работы</td>
+                        <td>комплект</td>
+                        <td>1</td>
+                        <td>120,000₽</td>
+                        <td>120,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Сантехнические работы</td>
+                        <td>комплект</td>
+                        <td>1</td>
+                        <td>80,000₽</td>
+                        <td>80,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Отделочные работы</td>
+                        <td>м²</td>
+                        <td>80</td>
+                        <td>1,500₽</td>
+                        <td>120,000₽</td>
+                    </tr>
+                    <tr>
+                        <td>Утепление и изоляция</td>
+                        <td>м²</td>
+                        <td>200</td>
+                        <td>800₽</td>
+                        <td>160,000₽</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4"><strong>Итого строительство:</strong></td>
+                        <td><strong>1,845,000₽</strong></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4"><strong>С учетом непредвиденных расходов (+15%):</strong></td>
+                        <td><strong>2,121,750₽</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #e8f5e8; border-radius: 15px;">
+                <h3>💰 Стоимость за м²: ~26,500₽</h3>
+                <p>Стоимость указана с учетом материалов и работ по состоянию на 2024 год. Итоговая цена может варьироваться в зависимости от региона, выбранных материалов и дополнительных требований.</p>
+            </div>
+        </div>
+        
+        <div id="timeline" class="tab-content">
+            <h2>Этапы строительства</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Этап 1: Подготовительные работы (1-2 недели)</h4>
+                    <p>• Получение разрешений и согласований<br>
+                    • Разметка участка и подготовка территории<br>
+                    • Завоз материалов и оборудования<br>
+                    • Устройство временных коммуникаций</p>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Этап 2: Фундамент (2-3 недели)</h4>
+                    <p>• Земляные работы и разработка траншей<br>
+                    • Устройство подушки и армирование<br>
+                    • Заливка бетона и выдержка<br>
+                    • Гидроизоляция и утепление цоколя</p>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Этап 3: Сборка сруба (3-4 недели)</h4>
+                    <p>• Укладка первого венца на фундамент<br>
+                    • Сборка стен из профилированного бруса<br>
+                    • Устройство оконных и дверных проемов<br>
+                    • Установка межэтажных перекрытий</p>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Этап 4: Кровля (2-3 недели)</h4>
+                    <p>• Монтаж стропильной системы<br>
+                    • Устройство обрешетки и контробрешетки<br>
+                    • Укладка утеплителя и пароизоляции<br>
+                    • Монтаж металлочерепицы и водостоков</p>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Этап 5: Окна и двери (1 неделя)</h4>
+                    <p>• Установка оконных блоков<br>
+                    • Монтаж входной и межкомнатных дверей<br>
+                    • Герметизация швов и откосов<br>
+                    • Регулировка фурнитуры</p>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Этап 6: Инженерные системы (3-4 недели)</h4>
+                    <p>• Электромонтажные работы<br>
+                    • Монтаж системы отопления<br>
+                    • Устройство водоснабжения и канализации<br>
+                    • Подключение и тестирование систем</p>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Этап 7: Полы и потолки (2 недели)</h4>
+                    <p>• Устройство чернового пола<br>
+                    • Утепление и пароизоляция<br>
+                    • Монтаж чистового пола<br>
+                    • Отделка потолков</p>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Этап 8: Отделочные работы (3-4 недели)</h4>
+                    <p>• Шлифовка и покраска стен из бруса<br>
+                    • Укладка напольных покрытий<br>
+                    • Установка сантехники и электроприборов<br>
+                    • Финишная отделка и уборка</p>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Этап 9: Благоустройство (1-2 недели)</h4>
+                    <p>• Устройство отмостки вокруг дома<br>
+                    • Планировка прилегающей территории<br>
+                    • Подключение к постоянным коммуникациям<br>
+                    • Сдача объекта заказчику</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; text-align: center;">
+                <h3>⏱️ Общий срок строительства: 4-5 месяцев</h3>
+                <p>При благоприятных погодных условиях и отсутствии форс-мажорных обстоятельств</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // Скрыть все вкладки
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Убрать активный класс у всех кнопок
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Показать выбранную вкладку
+            document.getElementById(tabName).classList.add('active');
+            
+            // Добавить активный класс к нажатой кнопке
+            event.target.classList.add('active');
+        }
+        
+        // Добавляем анимации при загрузке
+        window.addEventListener('load', function() {
+            const elements = document.querySelectorAll('.spec-card, .material-card, .timeline-item');
+            elements.forEach((element, index) => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    element.style.transition = 'all 0.6s ease';
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+        
+        // Интерактивные элементы для комнат
+        document.addEventListener('DOMContentLoaded', function() {
+            const rooms = document.querySelectorAll('.room');
+            rooms.forEach(room => {
+                room.addEventListener('click', function() {
+                    const roomName = this.textContent.split('\n')[0];
+                    alert(`Помещение: ${roomName}\nВы можете добавить дополнительную информацию о планировке этой комнаты.`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
