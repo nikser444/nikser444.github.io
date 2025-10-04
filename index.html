@@ -3,1730 +3,559 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Проект домика из бруса</title>
+    <title>Топ-50 дивидендных компаний России</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #2c3e50;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
+            color: #333;
         }
-        
-        .header {
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
             text-align: center;
-            margin-bottom: 30px;
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        .header h1 {
-            color: #8b4513;
-            font-size: 2.5rem;
+            color: #2d3748;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
-        .tabs {
-            display: flex;
-            justify-content: center;
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
             margin-bottom: 30px;
-            background: white;
-            border-radius: 15px;
-            padding: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 1.1em;
         }
-        
-        .tab {
-            background: #ecf0f1;
-            border: none;
-            padding: 12px 25px;
-            margin: 0 5px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-        
-        .tab.active {
-            background: #8b4513;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
-        }
-        
-        .tab:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-        }
-        
-        .tab-content {
-            display: none;
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .house-3d {
-            width: 100%;
-            height: 500px;
-            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 70%, #8FBC8F 100%);
-            position: relative;
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 30px;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
-        }
-        
-        #house3d {
-            width: 100%;
-            height: 100%;
-            border-radius: 15px;
-        }
-        
-        .controls {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255,255,255,0.9);
+
+        .info-box {
+            background: #edf2f7;
+            border-left: 4px solid #667eea;
             padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 10;
+            margin-bottom: 25px;
+            border-radius: 8px;
         }
-        
-        .controls h4 {
-            margin: 0 0 10px 0;
-            color: #8b4513;
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
             font-size: 14px;
         }
-        
-        .controls p {
-            margin: 5px 0;
-            font-size: 12px;
-            color: #666;
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
         }
-        
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: #8b4513;
-            font-size: 18px;
-            z-index: 5;
+
+        .table-wrapper {
+            overflow-x: auto;
         }
-        
-        .loading::after {
-            content: '';
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 1400px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        th {
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        th:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        th.sortable::after {
+            content: ' ⇅';
+            opacity: 0.5;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        .sector {
             display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .sector-oil { background: #fef5e7; color: #9c640c; }
+        .sector-bank { background: #eaf2f8; color: #21618c; }
+        .sector-telecom { background: #ebf5fb; color: #1f618d; }
+        .sector-retail { background: #fef9e7; color: #9a7d0a; }
+        .sector-metal { background: #f4ecf7; color: #6c3483; }
+        .sector-energy { background: #fadbd8; color: #943126; }
+        .sector-transport { background: #d5f4e6; color: #0e6655; }
+        .sector-chemical { background: #fdebd0; color: #9c640c; }
+        .sector-tech { background: #e8f8f5; color: #117a65; }
+
+        .dividend-yield {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .yield-high { color: #27ae60; }
+        .yield-medium { color: #f39c12; }
+        .yield-low { color: #e74c3c; }
+
+        .growth-positive { color: #27ae60; font-weight: 600; }
+        .growth-negative { color: #e74c3c; font-weight: 600; }
+        .growth-neutral { color: #7f8c8d; }
+
+        .stability {
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .stability-high { color: #27ae60; }
+        .stability-medium { color: #f39c12; }
+        .stability-low { color: #e74c3c; }
+
+        .years-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
             width: 20px;
             height: 20px;
-            border: 2px solid #8b4513;
-            border-top: 2px solid transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
+            border-radius: 4px;
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .floor-plan {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .plan {
-            background: #f8f9fa;
-            border: 2px solid #8b4513;
-            border-radius: 15px;
-            padding: 20px;
-            position: relative;
-        }
-        
-        .plan h3 {
-            text-align: center;
-            color: #8b4513;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-        }
-        
-        .room {
-            background: #e8f4fd;
-            border: 2px solid #3498db;
-            border-radius: 8px;
-            padding: 10px;
-            margin: 10px 0;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .room:hover {
-            background: #d4edda;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .specs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .spec-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease;
-        }
-        
-        .spec-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .spec-card h3 {
-            margin-bottom: 15px;
-            font-size: 1.4rem;
-        }
-        
-        .spec-list {
-            list-style: none;
-        }
-        
-        .spec-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .spec-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .materials-grid {
+
+        .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
+            margin-bottom: 30px;
         }
-        
-        .material-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            border-left: 5px solid #8b4513;
-            transition: all 0.3s ease;
-        }
-        
-        .material-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
-        
-        .estimate-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        
-        .estimate-table th {
-            background: #8b4513;
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 15px;
-            text-align: left;
-        }
-        
-        .estimate-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .estimate-table tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .total-row {
-            background: #e8f5e8 !important;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .timeline {
-            position: relative;
-        }
-        
-        .timeline-item {
-            background: white;
             padding: 20px;
-            margin: 20px 0;
             border-radius: 15px;
-            border-left: 5px solid #8b4513;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        
-        .timeline-item:hover {
-            transform: translateX(10px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .timeline-item h4 {
-            color: #8b4513;
+
+        .summary-card h3 {
+            font-size: 14px;
+            opacity: 0.9;
             margin-bottom: 10px;
         }
-        
+
+        .summary-card .value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
         @media (max-width: 768px) {
-            .floor-plan {
-                grid-template-columns: 1fr;
+            .container {
+                padding: 15px;
             }
-            
-            .tabs {
-                flex-wrap: wrap;
+
+            table {
+                font-size: 11px;
             }
-            
-            .tab {
-                margin: 5px;
-                padding: 10px 15px;
-                font-size: 0.9rem;
+
+            th, td {
+                padding: 6px 4px;
             }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .house-main {
-                width: 250px;
-                height: 150px;
+
+            .filters {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🏠 Проект домика из бруса</h1>
-            <p>Уютный экологичный дом для комфортной жизни</p>
-        </div>
-        
-        <div class="house-3d">
-            <div class="controls">
-                <h4>🎮 Управление</h4>
-                <p>🖱️ Вращение: Левая кнопка мыши</p>
-                <p>🔍 Масштаб: Колесико мыши</p>
-                <p>📱 Мобильные: Пальцем по экрану</p>
+        <h1>Топ-50 стабильных дивидендных компаний России</h1>
+        <div class="subtitle">Доходность, рост и история выплат (данные 2024-2025 гг.)</div>
+
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h3>Средняя дивдоходность</h3>
+                <div class="value">8.5%</div>
             </div>
-            <div class="loading" id="loading">Загрузка 3D модели...</div>
-            <canvas id="house3d"></canvas>
-        </div>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('overview')">Обзор</button>
-            <button class="tab" onclick="showTab('plans')">Планировка</button>
-            <button class="tab" onclick="showTab('specs')">Характеристики</button>
-            <button class="tab" onclick="showTab('materials')">Материалы</button>
-            <button class="tab" onclick="showTab('estimate')">Смета</button>
-            <button class="tab" onclick="showTab('timeline')">Этапы строительства</button>
-        </div>
-        
-        <div id="overview" class="tab-content active">
-            <h2>Общая информация о проекте</h2>
-            <p>Представляем вашему вниманию проект комфортабельного домика из бруса площадью 80 м². Дом спроектирован с учетом современных требований к энергоэффективности и экологичности.</p>
-            
-            <div class="specs-grid">
-                <div class="spec-card">
-                    <h3>🏗️ Основные параметры</h3>
-                    <ul class="spec-list">
-                        <li><span>Общая площадь:</span><span>80 м²</span></li>
-                        <li><span>Жилая площадь:</span><span>60 м²</span></li>
-                        <li><span>Этажность:</span><span>1 этаж</span></li>
-                        <li><span>Высота потолков:</span><span>2.7 м</span></li>
-                    </ul>
-                </div>
-                
-                <div class="spec-card">
-                    <h3>🏠 Планировка</h3>
-                    <ul class="spec-list">
-                        <li><span>Гостиная:</span><span>25 м²</span></li>
-                        <li><span>Спальня:</span><span>15 м²</span></li>
-                        <li><span>Кухня:</span><span>12 м²</span></li>
-                        <li><span>Санузел:</span><span>4 м²</span></li>
-                        <li><span>Прихожая:</span><span>4 м²</span></li>
-                        <li><span>Терраса:</span><span>20 м²</span></li>
-                    </ul>
-                </div>
+            <div class="summary-card">
+                <h3>Компаний с дивдоходностью >10%</h3>
+                <div class="value">15</div>
+            </div>
+            <div class="summary-card">
+                <h3>Средний стаж выплат</h3>
+                <div class="value">11 лет</div>
+            </div>
+            <div class="summary-card">
+                <h3>Компаний с ростом за 5 лет</h3>
+                <div class="value">38</div>
             </div>
         </div>
-        
-        <div id="plans" class="tab-content">
-            <h2>Планировка дома</h2>
-            <div class="floor-plan">
-                <div class="plan">
-                    <h3>Первый этаж</h3>
-                    <div class="room" style="height: 80px; background: #ffebee;">Гостиная<br>25 м²</div>
-                    <div style="display: flex; gap: 10px;">
-                        <div class="room" style="flex: 1; background: #e8f5e8;">Кухня<br>12 м²</div>
-                        <div class="room" style="flex: 1; background: #fff3e0;">Спальня<br>15 м²</div>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <div class="room" style="flex: 1; background: #f3e5f5;">Санузел<br>4 м²</div>
-                        <div class="room" style="flex: 1; background: #e1f5fe;">Прихожая<br>4 м²</div>
-                    </div>
-                </div>
-                
-                <div class="plan">
-                    <h3>Экспликация помещений</h3>
-                    <div class="room">Терраса - 20 м² (крытая)</div>
-                    <div class="room">Котельная - 6 м²</div>
-                    <div class="room">Кладовая - 4 м²</div>
-                    <div class="room">Веранда - 10 м² (открытая)</div>
-                </div>
-            </div>
+
+        <div class="info-box">
+            <strong>Примечание:</strong> Дивидендная доходность рассчитана от текущей цены акции. 
+            Рост акций указан с учетом реинвестирования дивидендов (TSR - Total Shareholder Return). 
+            Данные приблизительные, для точных решений проверяйте актуальные котировки.
         </div>
-        
-        <div id="specs" class="tab-content">
-            <h2>Технические характеристики</h2>
-            <div class="specs-grid">
-                <div class="spec-card">
-                    <h3>🔧 Конструкция</h3>
-                    <ul class="spec-list">
-                        <li><span>Фундамент:</span><span>Ленточный монолитный</span></li>
-                        <li><span>Стены:</span><span>Брус 150х150 мм</span></li>
-                        <li><span>Межэтажные перекрытия:</span><span>Деревянные балки</span></li>
-                        <li><span>Кровля:</span><span>Металлочерепица</span></li>
-                        <li><span>Утепление:</span><span>Минеральная вата 100мм</span></li>
-                    </ul>
-                </div>
-                
-                <div class="spec-card">
-                    <h3>🌡️ Инженерные системы</h3>
-                    <ul class="spec-list">
-                        <li><span>Отопление:</span><span>Электрокотел + теплый пол</span></li>
-                        <li><span>Водоснабжение:</span><span>Скважина + насосная станция</span></li>
-                        <li><span>Канализация:</span><span>Автономная септик</span></li>
-                        <li><span>Электричество:</span><span>380В, щиток на 16 автоматов</span></li>
-                    </ul>
-                </div>
-                
-                <div class="spec-card">
-                    <h3>🚪 Окна и двери</h3>
-                    <ul class="spec-list">
-                        <li><span>Окна:</span><span>ПВХ 2-камерный стеклопакет</span></li>
-                        <li><span>Входная дверь:</span><span>Металлическая утепленная</span></li>
-                        <li><span>Межкомнатные двери:</span><span>МДФ экошпон</span></li>
-                        <li><span>Фурнитура:</span><span>Европейская, антивандальная</span></li>
-                    </ul>
-                </div>
-            </div>
+
+        <div class="filters">
+            <input type="text" class="filter-input" id="searchInput" placeholder="Поиск по названию компании...">
+            <select class="filter-input" id="sectorFilter">
+                <option value="">Все сектора</option>
+                <option value="oil">Нефть и газ</option>
+                <option value="bank">Банки</option>
+                <option value="telecom">Телеком</option>
+                <option value="metal">Металлургия</option>
+                <option value="energy">Энергетика</option>
+                <option value="retail">Ритейл</option>
+                <option value="transport">Транспорт</option>
+            </select>
+            <select class="filter-input" id="yieldFilter">
+                <option value="">Все доходности</option>
+                <option value="high">Высокая (>10%)</option>
+                <option value="medium">Средняя (5-10%)</option>
+                <option value="low">Низкая (<5%)</option>
+            </select>
         </div>
-        
-        <div id="materials" class="tab-content">
-            <h2>Материалы и технологии</h2>
-            <div class="materials-grid">
-                <div class="material-card">
-                    <h3>🌲 Основной материал - брус</h3>
-                    <p><strong>Профилированный брус 150х150 мм</strong></p>
-                    <p>Изготовлен из сосны первого сорта, естественной влажности. Обеспечивает отличную теплоизоляцию и экологичность.</p>
-                    <p><strong>Преимущества:</strong></p>
-                    <ul>
-                        <li>Натуральный материал</li>
-                        <li>Отличные теплоизоляционные свойства</li>
-                        <li>Простота монтажа</li>
-                        <li>Эстетичный внешний вид</li>
-                    </ul>
-                </div>
-                
-                <div class="material-card">
-                    <h3>🏗️ Фундамент</h3>
-                    <p><strong>Ленточный железобетонный фундамент</strong></p>
-                    <p>Глубина заложения 1.2м, ширина 400мм. Армирование прутком 12мм в два пояса.</p>
-                    <p><strong>Характеристики:</strong></p>
-                    <ul>
-                        <li>Бетон класса В15</li>
-                        <li>Гидроизоляция рубероидом</li>
-                        <li>Утепление пенополистиролом</li>
-                        <li>Отмостка шириной 1м</li>
-                    </ul>
-                </div>
-                
-                <div class="material-card">
-                    <h3>🏠 Кровля</h3>
-                    <p><strong>Металлочерепица Монтеррей</strong></p>
-                    <p>Стропильная система из бруса 150х50мм с шагом 600мм. Утепление минеральной ватой 200мм.</p>
-                    <p><strong>Комплектация:</strong></p>
-                    <ul>
-                        <li>Металлочерепица 0.5мм</li>
-                        <li>Подкровельная пленка</li>
-                        <li>Контр-обрешетка и обрешетка</li>
-                        <li>Водосточная система</li>
-                    </ul>
-                </div>
-                
-                <div class="material-card">
-                    <h3>🌡️ Утепление</h3>
-                    <p><strong>Базальтовая вата ROCKWOOL</strong></p>
-                    <p>Экологически чистый утеплитель с отличными теплоизоляционными свойствами.</p>
-                    <p><strong>Применение:</strong></p>
-                    <ul>
-                        <li>Стены: 100мм</li>
-                        <li>Кровля: 200мм</li>
-                        <li>Пол: 150мм</li>
-                        <li>Пароизоляция и ветрозащита</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        
-        <div id="estimate" class="tab-content">
-            <h2>Предварительная смета строительства</h2>
-            <table class="estimate-table">
+
+        <div class="table-wrapper">
+            <table id="dividendTable">
                 <thead>
                     <tr>
-                        <th>Наименование работ</th>
-                        <th>Единица</th>
-                        <th>Количество</th>
-                        <th>Цена за ед.</th>
-                        <th>Сумма</th>
+                        <th class="sortable" data-sort="rank">№</th>
+                        <th class="sortable" data-sort="company">Компания</th>
+                        <th class="sortable" data-sort="ticker">Тикер</th>
+                        <th class="sortable" data-sort="sector">Сектор</th>
+                        <th class="sortable" data-sort="divYield">Дивд-ть %</th>
+                        <th class="sortable" data-sort="years">Лет выплат</th>
+                        <th class="sortable" data-sort="payments">Раз/год</th>
+                        <th class="sortable" data-sort="growth1y">Рост 1г %</th>
+                        <th class="sortable" data-sort="growth5y">Рост 5л %</th>
+                        <th class="sortable" data-sort="growth10y">Рост 10л %</th>
+                        <th class="sortable" data-sort="growth20y">Рост 20л %</th>
+                        <th class="sortable" data-sort="stability">Стаб-ть</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>Земляные работы, разметка</td>
-                        <td>м²</td>
-                        <td>80</td>
-                        <td>500₽</td>
-                        <td>40,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Фундамент ленточный</td>
-                        <td>м³</td>
-                        <td>15</td>
-                        <td>8,000₽</td>
-                        <td>120,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Материал - профилированный брус</td>
-                        <td>м³</td>
-                        <td>25</td>
-                        <td>15,000₽</td>
-                        <td>375,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Сборка сруба</td>
-                        <td>м²</td>
-                        <td>80</td>
-                        <td>3,500₽</td>
-                        <td>280,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Кровельные работы с материалом</td>
-                        <td>м²</td>
-                        <td>100</td>
-                        <td>2,500₽</td>
-                        <td>250,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Окна и двери с установкой</td>
-                        <td>комплект</td>
-                        <td>1</td>
-                        <td>180,000₽</td>
-                        <td>180,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Полы (черновые и чистовые)</td>
-                        <td>м²</td>
-                        <td>60</td>
-                        <td>2,000₽</td>
-                        <td>120,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Электромонтажные работы</td>
-                        <td>комплект</td>
-                        <td>1</td>
-                        <td>120,000₽</td>
-                        <td>120,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Сантехнические работы</td>
-                        <td>комплект</td>
-                        <td>1</td>
-                        <td>80,000₽</td>
-                        <td>80,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Отделочные работы</td>
-                        <td>м²</td>
-                        <td>80</td>
-                        <td>1,500₽</td>
-                        <td>120,000₽</td>
-                    </tr>
-                    <tr>
-                        <td>Утепление и изоляция</td>
-                        <td>м²</td>
-                        <td>200</td>
-                        <td>800₽</td>
-                        <td>160,000₽</td>
-                    </tr>
-                    <tr class="total-row">
-                        <td colspan="4"><strong>Итого строительство:</strong></td>
-                        <td><strong>1,845,000₽</strong></td>
-                    </tr>
-                    <tr class="total-row">
-                        <td colspan="4"><strong>С учетом непредвиденных расходов (+15%):</strong></td>
-                        <td><strong>2,121,750₽</strong></td>
-                    </tr>
+                <tbody id="tableBody">
                 </tbody>
             </table>
-            
-            <div style="margin-top: 30px; padding: 20px; background: #e8f5e8; border-radius: 15px;">
-                <h3>💰 Стоимость за м²: ~26,500₽</h3>
-                <p>Стоимость указана с учетом материалов и работ по состоянию на 2024 год. Итоговая цена может варьироваться в зависимости от региона, выбранных материалов и дополнительных требований.</p>
-            </div>
         </div>
-        
-        <div id="timeline" class="tab-content">
-            <h2>Этапы строительства</h2>
-            <div class="timeline">
-                <div class="timeline-item">
-                    <h4>Этап 1: Подготовительные работы (1-2 недели)</h4>
-                    <p>• Получение разрешений и согласований<br>
-                    • Разметка участка и подготовка территории<br>
-                    • Завоз материалов и оборудования<br>
-                    • Устройство временных коммуникаций</p>
-                </div>
-                
-                <div class="timeline-item">
-                    <h4>Этап 2: Фундамент (2-3 недели)</h4>
-                    <p>• Земляные работы и разработка траншей<br>
-                    • Устройство подушки и армирование<br>
-                    • Заливка бетона и выдержка<br>
-                    • Гидроизоляция и утепление цоколя</p>
-                </div>
-                
-                <div class="timeline-item">
-                    <h4>Этап 3: Сборка сруба (3-4 недели)</h4>
-                    <p>• Укладка первого венца на фундамент<br>
-                    • Сборка стен из профилированного бруса<br>
-                    • Устройство оконных и дверных проемов<br>
-                    • Установка межэтажных перекрытий</p>
-                </div>
-                
-                <div class="timeline-item">
-                    <h4>Этап 4: Кровля (2-3 недели)</h4>
-                    <p>• Монтаж стропильной системы<br>
-                    • Устройство обрешетки и контробрешетки<br>
-                    • Укладка утеплителя и пароизоляции<br>
-                    • Монтаж металлочерепицы и водостоков</p>
-                </div>
-                
-                <div class="timeline-item">
-                    <h4>Этап 5: Окна и двери (1 неделя)</h4>
-                    <p>• Установка оконных блоков<br>
-                    • Монтаж входной и межкомнатных дверей<br>
-                    • Герметизация швов и откосов<br>
-                    • Регулировка фурнитуры</p>
-                </div>
-                
-                <div class="timeline-item">
-                    <h4>Этап 6: Инженерные системы (3-4 недели)</h4>
-                    <p>• Электромонтажные работы<br>
-                    • Монтаж системы отопления<br>
-                    • Устройство водоснабжения и канализации<br>
-                    • Подключение и тестирование систем</p>
-                </div>
-                
-                <div class="timeline-item">
-                    <h4>Этап 7: Полы и потолки (2 недели)</h4>
-                    <p>• Устройство чернового пола<br>
-                    • Утепление и пароизоляция<br>
-                    • Монтаж чистового пола<br>
-                    • Отделка потолков</p>
-                </div>
-                
-                <div class="timeline-item">
-                    <h4>Этап 8: Отделочные работы (3-4 недели)</h4>
-                    <p>• Шлифовка и покраска стен из бруса<br>
-                    • Укладка напольных покрытий<br>
-                    • Установка сантехники и электроприборов<br>
-                    • Финишная отделка и уборка</p>
-                </div>
-                
-                <div class="timeline-item">
-                    <h4>Этап 9: Благоустройство (1-2 недели)</h4>
-                    <p>• Устройство отмостки вокруг дома<br>
-                    • Планировка прилегающей территории<br>
-                    • Подключение к постоянным коммуникациям<br>
-                    • Сдача объекта заказчику</p>
-                </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #27ae60;"></div>
+                <span>Высокая доходность/рост</span>
             </div>
-            
-            <div style="margin-top: 30px; padding: 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; text-align: center;">
-                <h3>⏱️ Общий срок строительства: 4-5 месяцев</h3>
-                <p>При благоприятных погодных условиях и отсутствии форс-мажорных обстоятельств</p>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f39c12;"></div>
+                <span>Средняя доходность/рост</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e74c3c;"></div>
+                <span>Низкая доходность/убыток</span>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script>
-        let scene, camera, renderer, house, controls;
-        let mouseX = 0, mouseY = 0;
-        let targetRotationX = 0, targetRotationY = 0;
-        let isMouseDown = false;
-        
-        function init3D() {
-            const container = document.getElementById('house3d');
-            
-            // Создание сцены
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB);
-            
-            // Камера
-            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(15, 10, 15);
-            camera.lookAt(0, 0, 0);
-            
-            // Рендерер
-            renderer = new THREE.WebGLRenderer({ canvas: container, antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            
-            // Освещение
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(10, 10, 5);
-            directionalLight.castShadow = true;
-            directionalLight.shadow.mapSize.width = 2048;
-            directionalLight.shadow.mapSize.height = 2048;
-            scene.add(directionalLight);
-            
-            // Создание группы дома
-            house = new THREE.Group();
-            
-            // Создание текстур
-            const textureLoader = new THREE.TextureLoader();
-            
-            // Процедурная текстура дерева
-            const woodCanvas = document.createElement('canvas');
-            woodCanvas.width = 512;
-            woodCanvas.height = 512;
-            const woodCtx = woodCanvas.getContext('2d');
-            
-            // Основной цвет дерева
-            const gradient = woodCtx.createLinearGradient(0, 0, 512, 0);
-            gradient.addColorStop(0, '#D2B48C');
-            gradient.addColorStop(0.3, '#DDD0C0');
-            gradient.addColorStop(0.7, '#C8A882');
-            gradient.addColorStop(1, '#B8956F');
-            woodCtx.fillStyle = gradient;
-            woodCtx.fillRect(0, 0, 512, 512);
-            
-            // Добавляем текстуру древесины
-            for (let i = 0; i < 30; i++) {
-                woodCtx.strokeStyle = `rgba(139, 69, 19, ${Math.random() * 0.3 + 0.1})`;
-                woodCtx.lineWidth = Math.random() * 3 + 1;
-                woodCtx.beginPath();
-                woodCtx.moveTo(0, Math.random() * 512);
-                woodCtx.bezierCurveTo(
-                    128, Math.random() * 512,
-                    384, Math.random() * 512,
-                    512, Math.random() * 512
-                );
-                woodCtx.stroke();
-            }
-            
-            // Добавляем узлы и неровности
-            for (let i = 0; i < 15; i++) {
-                const x = Math.random() * 512;
-                const y = Math.random() * 512;
-                const radius = Math.random() * 20 + 5;
-                const innerGradient = woodCtx.createRadialGradient(x, y, 0, x, y, radius);
-                innerGradient.addColorStop(0, '#8B4513');
-                innerGradient.addColorStop(1, 'transparent');
-                woodCtx.fillStyle = innerGradient;
-                woodCtx.beginPath();
-                woodCtx.arc(x, y, radius, 0, Math.PI * 2);
-                woodCtx.fill();
-            }
-            
-            const woodTexture = new THREE.CanvasTexture(woodCanvas);
-            woodTexture.wrapS = THREE.RepeatWrapping;
-            woodTexture.wrapT = THREE.RepeatWrapping;
-            woodTexture.repeat.set(2, 1);
-            
-            // Нормальная карта для дерева (имитация рельефа)
-            const normalCanvas = document.createElement('canvas');
-            normalCanvas.width = 512;
-            normalCanvas.height = 512;
-            const normalCtx = normalCanvas.getContext('2d');
-            normalCtx.fillStyle = '#8080ff';
-            normalCtx.fillRect(0, 0, 512, 512);
-            
-            // Добавляем неровности
-            for (let i = 0; i < 50; i++) {
-                normalCtx.fillStyle = `rgba(${120 + Math.random() * 20}, ${120 + Math.random() * 20}, 255, 0.3)`;
-                normalCtx.fillRect(Math.random() * 512, Math.random() * 20, 512, Math.random() * 5 + 2);
-            }
-            
-            const normalMap = new THREE.CanvasTexture(normalCanvas);
-            normalMap.wrapS = THREE.RepeatWrapping;
-            normalMap.wrapT = THREE.RepeatWrapping;
-            normalMap.repeat.set(2, 1);
-            
-            // Материалы с физически корректным освещением
-            const woodMaterial = new THREE.MeshPhysicalMaterial({
-                map: woodTexture,
-                normalMap: normalMap,
-                roughness: 0.8,
-                metalness: 0.1,
-                clearcoat: 0.1,
-                clearcoatRoughness: 0.9
-            });
-            
-            // Текстура металлочерепицы
-            const roofCanvas = document.createElement('canvas');
-            roofCanvas.width = 256;
-            roofCanvas.height = 256;
-            const roofCtx = roofCanvas.getContext('2d');
-            
-            // Базовый цвет металла
-            roofCtx.fillStyle = '#8B4513';
-            roofCtx.fillRect(0, 0, 256, 256);
-            
-            // Волны металлочерепицы
-            for (let i = 0; i < 256; i += 32) {
-                const gradient = roofCtx.createLinearGradient(0, i, 0, i + 32);
-                gradient.addColorStop(0, '#A0522D');
-                gradient.addColorStop(0.5, '#8B4513');
-                gradient.addColorStop(1, '#654321');
-                roofCtx.fillStyle = gradient;
-                roofCtx.fillRect(0, i, 256, 32);
-                
-                // Блики металла
-                roofCtx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                roofCtx.fillRect(0, i + 2, 256, 3);
-            }
-            
-            const roofTexture = new THREE.CanvasTexture(roofCanvas);
-            roofTexture.wrapS = THREE.RepeatWrapping;
-            roofTexture.wrapT = THREE.RepeatWrapping;
-            roofTexture.repeat.set(4, 2);
-            
-            const roofMaterial = new THREE.MeshPhysicalMaterial({
-                map: roofTexture,
-                roughness: 0.3,
-                metalness: 0.8,
-                clearcoat: 0.9,
-                clearcoatRoughness: 0.1
-            });
-            
-            // Стекло для окон
-            const windowMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x87CEEB,
-                transparent: true,
-                opacity: 0.3,
-                roughness: 0,
-                metalness: 0,
-                transmission: 0.9,
-                thickness: 0.5,
-                ior: 1.5
-            });
-            
-            // Материал двери
-            const doorCanvas = document.createElement('canvas');
-            doorCanvas.width = 256;
-            doorCanvas.height = 512;
-            const doorCtx = doorCanvas.getContext('2d');
-            
-            // Основа двери
-            doorCtx.fillStyle = '#654321';
-            doorCtx.fillRect(0, 0, 256, 512);
-            
-            // Панели двери
-            doorCtx.strokeStyle = '#8B4513';
-            doorCtx.lineWidth = 3;
-            doorCtx.strokeRect(20, 30, 216, 180);
-            doorCtx.strokeRect(20, 230, 216, 180);
-            doorCtx.strokeRect(20, 430, 216, 50);
-            
-            // Текстура дерева на двери
-            for (let i = 0; i < 20; i++) {
-                doorCtx.strokeStyle = `rgba(139, 69, 19, ${Math.random() * 0.2 + 0.1})`;
-                doorCtx.lineWidth = Math.random() * 2 + 1;
-                doorCtx.beginPath();
-                doorCtx.moveTo(20, Math.random() * 512);
-                doorCtx.lineTo(236, Math.random() * 512);
-                doorCtx.stroke();
-            }
-            
-            const doorTexture = new THREE.CanvasTexture(doorCanvas);
-            const doorMaterial = new THREE.MeshPhysicalMaterial({
-                map: doorTexture,
-                roughness: 0.9,
-                metalness: 0.1
-            });
-            
-            // Бетонный фундамент
-            const foundationCanvas = document.createElement('canvas');
-            foundationCanvas.width = 256;
-            foundationCanvas.height = 256;
-            const foundationCtx = foundationCanvas.getContext('2d');
-            
-            foundationCtx.fillStyle = '#696969';
-            foundationCtx.fillRect(0, 0, 256, 256);
-            
-            // Текстура бетона
-            for (let i = 0; i < 1000; i++) {
-                const gray = Math.floor(Math.random() * 60) + 80;
-                foundationCtx.fillStyle = `rgb(${gray}, ${gray}, ${gray})`;
-                foundationCtx.fillRect(Math.random() * 256, Math.random() * 256, 1, 1);
-            }
-            
-            const foundationTexture = new THREE.CanvasTexture(foundationCanvas);
-            foundationTexture.wrapS = THREE.RepeatWrapping;
-            foundationTexture.wrapT = THREE.RepeatWrapping;
-            foundationTexture.repeat.set(3, 3);
-            
-            const foundationMaterial = new THREE.MeshPhysicalMaterial({
-                map: foundationTexture,
-                roughness: 0.9,
-                metalness: 0
-            });
-            
-            // Создание детального домика из бруса
-            
-            // Фундамент с более реалистичной геометрией
-            const foundationGeometry = new THREE.BoxGeometry(12, 1.2, 10);
-            const foundation = new THREE.Mesh(foundationGeometry, foundationMaterial);
-            foundation.position.set(0, -0.6, 0);
-            foundation.receiveShadow = true;
-            foundation.castShadow = true;
-            house.add(foundation);
-            
-            // Цоколь
-            const socleGeometry = new THREE.BoxGeometry(11.8, 0.8, 9.8);
-            const socleMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x2F4F4F,
-                roughness: 0.8,
-                metalness: 0.1
-            });
-            const socle = new THREE.Mesh(socleGeometry, socleMaterial);
-            socle.position.set(0, 0.4, 0);
-            socle.receiveShadow = true;
-            socle.castShadow = true;
-            house.add(socle);
-            
-            // Венцы бруса - создаем каждый венец отдельно для реализма
-            const logWidth = 10.2;
-            const logHeight = 0.2;
-            const logDepth = 8.2;
-            const logCount = 18;
-            
-            for (let i = 0; i < logCount; i++) {
-                // Передняя и задняя стены
-                const frontLogGeometry = new THREE.BoxGeometry(logWidth, logHeight, 0.2);
-                const backLogGeometry = new THREE.BoxGeometry(logWidth, logHeight, 0.2);
-                
-                // Боковые стены
-                const leftLogGeometry = new THREE.BoxGeometry(0.2, logHeight, logDepth);
-                const rightLogGeometry = new THREE.BoxGeometry(0.2, logHeight, logDepth);
-                
-                // Небольшая вариация в цвете для реализма
-                const variation = (Math.random() - 0.5) * 0.1;
-                const logMaterial = woodMaterial.clone();
-                
-                const frontLog = new THREE.Mesh(frontLogGeometry, logMaterial);
-                const backLog = new THREE.Mesh(backLogGeometry, logMaterial);
-                const leftLog = new THREE.Mesh(leftLogGeometry, logMaterial);
-                const rightLog = new THREE.Mesh(rightLogGeometry, logMaterial);
-                
-                const yPos = 1 + i * (logHeight + 0.05);
-                
-                frontLog.position.set(0, yPos, 4);
-                backLog.position.set(0, yPos, -4);
-                leftLog.position.set(-5, yPos, 0);
-                rightLog.position.set(5, yPos, 0);
-                
-                // Добавляем небольшие случайные смещения для реализма
-                frontLog.position.x += (Math.random() - 0.5) * 0.02;
-                backLog.position.x += (Math.random() - 0.5) * 0.02;
-                
-                [frontLog, backLog, leftLog, rightLog].forEach(log => {
-                    log.castShadow = true;
-                    log.receiveShadow = true;
-                    house.add(log);
-                });
-                
-                // Добавляем пазы между венцами
-                if (i > 0) {
-                    const grooveGeometry = new THREE.BoxGeometry(logWidth - 0.1, 0.05, 0.15);
-                    const grooveMaterial = new THREE.MeshPhysicalMaterial({
-                        color: 0x8B4513,
-                        roughness: 1,
-                        metalness: 0
-                    });
-                    const frontGroove = new THREE.Mesh(grooveGeometry, grooveMaterial);
-                    const backGroove = new THREE.Mesh(grooveGeometry, grooveMaterial);
-                    
-                    frontGroove.position.set(0, yPos - logHeight/2, 4);
-                    backGroove.position.set(0, yPos - logHeight/2, -4);
-                    
-                    house.add(frontGroove);
-                    house.add(backGroove);
-                }
-            }
-            
-            // Более реалистичная стропильная система
-            const rafterMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x8B4513,
-                roughness: 0.8,
-                metalness: 0.1
-            });
-            
-            // Мауэрлат (основа крыши)
-            const mauerlat1 = new THREE.Mesh(new THREE.BoxGeometry(10.2, 0.15, 0.15), rafterMaterial);
-            const mauerlat2 = new THREE.Mesh(new THREE.BoxGeometry(10.2, 0.15, 0.15), rafterMaterial);
-            mauerlat1.position.set(0, 4.5, -4);
-            mauerlat2.position.set(0, 4.5, 4);
-            mauerlat1.castShadow = true;
-            mauerlat2.castShadow = true;
-            house.add(mauerlat1);
-            house.add(mauerlat2);
-            
-            // Стропила
-            const rafterGeometry = new THREE.BoxGeometry(0.15, 0.2, 6);
-            for (let i = -4; i <= 4; i += 1.5) {
-                const rafter1 = new THREE.Mesh(rafterGeometry, rafterMaterial);
-                const rafter2 = new THREE.Mesh(rafterGeometry, rafterMaterial);
-                
-                rafter1.position.set(i, 6.5, -1);
-                rafter2.position.set(i, 6.5, 1);
-                rafter1.rotation.x = -Math.PI / 4;
-                rafter2.rotation.x = Math.PI / 4;
-                
-                rafter1.castShadow = true;
-                rafter2.castShadow = true;
-                house.add(rafter1);
-                house.add(rafter2);
-            }
-            
-            // Коньковый брус
-            const ridgeBeam = new THREE.Mesh(new THREE.BoxGeometry(10.5, 0.2, 0.2), rafterMaterial);
-            ridgeBeam.position.set(0, 7.2, 0);
-            ridgeBeam.castShadow = true;
-            house.add(ridgeBeam);
-            
-            // Обрешетка
-            const battening = new THREE.BoxGeometry(0.05, 0.05, 10.5);
-            for (let i = -2.5; i <= 2.5; i += 0.5) {
-                const batten1 = new THREE.Mesh(battening, rafterMaterial);
-                const batten2 = new THREE.Mesh(battening, rafterMaterial);
-                
-                batten1.position.set(0, 6.8 + Math.abs(i) * 0.15, i);
-                batten2.position.set(0, 6.8 + Math.abs(i) * 0.15, i);
-                batten1.rotation.z = Math.PI / 2;
-                batten2.rotation.z = Math.PI / 2;
-                
-                house.add(batten1);
-                house.add(batten2);
-            }
-            
-            // Кровля из металлочерепицы - отдельные листы
-            const sheetWidth = 2.5;
-            const sheetLength = 6;
-            for (let x = -5; x < 5; x += sheetWidth) {
-                // Передний скат
-                const roofSheet1 = new THREE.PlaneGeometry(sheetWidth, sheetLength);
-                const roof1 = new THREE.Mesh(roofSheet1, roofMaterial);
-                roof1.rotation.x = -Math.PI / 4;
-                roof1.position.set(x + sheetWidth/2, 7.5, -1.5);
-                roof1.castShadow = true;
-                roof1.receiveShadow = true;
-                house.add(roof1);
-                
-                // Задний скат
-                const roofSheet2 = new THREE.PlaneGeometry(sheetWidth, sheetLength);
-                const roof2 = new THREE.Mesh(roofSheet2, roofMaterial);
-                roof2.rotation.x = Math.PI / 4;
-                roof2.position.set(x + sheetWidth/2, 7.5, 1.5);
-                roof2.castShadow = true;
-                roof2.receiveShadow = true;
-                house.add(roof2);
-            }
-            
-            // Водосточная система
-            const gutterMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x708090,
-                roughness: 0.2,
-                metalness: 0.9
-            });
-            
-            const gutterGeometry = new THREE.CylinderGeometry(0.08, 0.08, 10, 8);
-            const gutter1 = new THREE.Mesh(gutterGeometry, gutterMaterial);
-            const gutter2 = new THREE.Mesh(gutterGeometry, gutterMaterial);
-            
-            gutter1.position.set(0, 5.2, -4.5);
-            gutter2.position.set(0, 5.2, 4.5);
-            gutter1.rotation.z = Math.PI / 2;
-            gutter2.rotation.z = Math.PI / 2;
-            
-            house.add(gutter1);
-            house.add(gutter2);
-            
-            // Водосточные трубы
-            const drainPipe1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 5, 8), gutterMaterial);
-            const drainPipe2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 5, 8), gutterMaterial);
-            
-            drainPipe1.position.set(-4, 2.5, -4.5);
-            drainPipe2.position.set(4, 2.5, 4.5);
-            
-            house.add(drainPipe1);
-            house.add(drainPipe2);
-            
-            // Детальные окна с рамами
-            const frameDepth = 0.1;
-            const frameMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x8B4513,
-                roughness: 0.7,
-                metalness: 0.1
-            });
-            
-            // Функция создания детального окна
-            function createDetailedWindow(x, y, z, rotationY = 0) {
-                const windowGroup = new THREE.Group();
-                
-                // Основная рама
-                const mainFrame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.7, frameDepth), frameMaterial);
-                windowGroup.add(mainFrame);
-                
-                // Стекло
-                const glass = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.3, 0.02), windowMaterial);
-                glass.position.z = frameDepth/4;
-                windowGroup.add(glass);
-                
-                // Горизонтальная перекладина
-                const crossH = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.08, frameDepth), frameMaterial);
-                windowGroup.add(crossH);
-                
-                // Вертикальная перекладина
-                const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.7, frameDepth), frameMaterial);
-                windowGroup.add(crossV);
-                
-                // Подоконник
-                const sill = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 0.3), frameMaterial);
-                sill.position.set(0, -1.4, frameDepth/2 + 0.1);
-                windowGroup.add(sill);
-                
-                // Откосы
-                const sideFrame1 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.7, 0.25), frameMaterial);
-                const sideFrame2 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.7, 0.25), frameMaterial);
-                sideFrame1.position.set(-1.2, 0, -0.1);
-                sideFrame2.position.set(1.2, 0, -0.1);
-                windowGroup.add(sideFrame1);
-                windowGroup.add(sideFrame2);
-                
-                windowGroup.position.set(x, y, z);
-                windowGroup.rotation.y = rotationY;
-                windowGroup.castShadow = true;
-                windowGroup.receiveShadow = true;
-                
-                return windowGroup;
-            }
-            
-            // Добавляем окна
-            house.add(createDetailedWindow(-2.5, 2.5, 4.1));
-            house.add(createDetailedWindow(2.5, 2.5, 4.1));
-            house.add(createDetailedWindow(5.1, 2.5, 0, Math.PI/2));
-            house.add(createDetailedWindow(-5.1, 2.5, 0, Math.PI/2));
-            
-            // Детальная входная дверь
-            const doorGroup = new THREE.Group();
-            
-            // Основа двери
-            const doorMain = new THREE.Mesh(new THREE.BoxGeometry(1.5, 4, 0.08), doorMaterial);
-            doorGroup.add(doorMain);
-            
-            // Рама двери
-            const doorFrameGeometry = new THREE.BoxGeometry(1.7, 4.2, 0.15);
-            const doorFrame = new THREE.Mesh(doorFrameGeometry, frameMaterial);
-            doorFrame.position.z = -0.04;
-            doorGroup.add(doorFrame);
-            
-            // Дверные панели (рельеф)
-            const panel1 = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.6, 0.02), frameMaterial);
-            const panel2 = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.6, 0.02), frameMaterial);
-            panel1.position.set(0, 0.8, 0.05);
-            panel2.position.set(0, -0.8, 0.05);
-            doorGroup.add(panel1);
-            doorGroup.add(panel2);
-            
-            // Ручка и замок
-            const handleMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0xFFD700,
-                roughness: 0.1,
-                metalness: 0.9
-            });
-            const handle = new THREE.Mesh(new THREE.SphereGeometry(0.05), handleMaterial);
-            const lockPlate = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.3, 0.02), handleMaterial);
-            handle.position.set(0.6, 0, 0.06);
-            lockPlate.position.set(0.6, 0, 0.05);
-            doorGroup.add(handle);
-            doorGroup.add(lockPlate);
-            
-            // Порог
-            const threshold = new THREE.Mesh(new THREE.BoxGeometry(2, 0.1, 0.3), frameMaterial);
-            threshold.position.set(0, -2.1, 0.1);
-            doorGroup.add(threshold);
-            
-            doorGroup.position.set(0, 2, 4.12);
-            doorGroup.castShadow = true;
-            doorGroup.receiveShadow = true;
-            house.add(doorGroup);            
-            // Детальная терраса
-            const terraceGroup = new THREE.Group();
-            
-            // Основание террасы - доски
-            const deckBoardGeometry = new THREE.BoxGeometry(0.15, 0.05, 4);
-            const deckMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0xD2B48C,
-                roughness: 0.8,
-                metalness: 0.1,
-                map: woodTexture
-            });
-            
-            for (let i = -3.5; i <= 3.5; i += 0.2) {
-                const board = new THREE.Mesh(deckBoardGeometry, deckMaterial);
-                board.position.set(i, 0.15, 6);
-                board.castShadow = true;
-                board.receiveShadow = true;
-                terraceGroup.add(board);
-            }
-            
-            // Лаги под террасой
-            const lagGeometry = new THREE.BoxGeometry(8, 0.15, 0.2);
-            for (let i = 4.5; i <= 7.5; i += 1) {
-                const lag = new THREE.Mesh(lagGeometry, frameMaterial);
-                lag.position.set(0, 0, i);
-                terraceGroup.add(lag);
-            }
-            
-            // Столбы террасы с капителями
-            const pillarGeometry = new THREE.BoxGeometry(0.25, 2.8, 0.25);
-            const capitalGeometry = new THREE.BoxGeometry(0.35, 0.15, 0.35);
-            
-            for (let i = -3; i <= 3; i += 3) {
-                const pillar = new THREE.Mesh(pillarGeometry, frameMaterial);
-                const capital = new THREE.Mesh(capitalGeometry, frameMaterial);
-                
-                pillar.position.set(i, 1.6, 8);
-                capital.position.set(i, 3.1, 8);
-                
-                pillar.castShadow = true;
-                capital.castShadow = true;
-                
-                terraceGroup.add(pillar);
-                terraceGroup.add(capital);
-            }
-            
-            // Перила террасы
-            const railingPostGeometry = new THREE.BoxGeometry(0.1, 1, 0.1);
-            const railingGeometry = new THREE.BoxGeometry(6, 0.1, 0.1);
-            
-            // Стойки перил
-            for (let i = -3; i <= 3; i += 1.5) {
-                if (i !== 0) { // Не ставим стойку посередине (там проход)
-                    const post = new THREE.Mesh(railingPostGeometry, frameMaterial);
-                    post.position.set(i, 2.7, 8);
-                    post.castShadow = true;
-                    terraceGroup.add(post);
-                }
-            }
-            
-            // Верхние перила
-            const topRail1 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.1, 0.1), frameMaterial);
-            const topRail2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.1, 0.1), frameMaterial);
-            topRail1.position.set(-2.25, 3.2, 8);
-            topRail2.position.set(2.25, 3.2, 8);
-            terraceGroup.add(topRail1);
-            terraceGroup.add(topRail2);
-            
-            // Нижние перила
-            const bottomRail1 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.1, 0.1), frameMaterial);
-            const bottomRail2 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.1, 0.1), frameMaterial);
-            bottomRail1.position.set(-2.25, 2.2, 8);
-            bottomRail2.position.set(2.25, 2.2, 8);
-            terraceGroup.add(bottomRail1);
-            terraceGroup.add(bottomRail2);
-            
-            house.add(terraceGroup);
-            
-            // Ступени к террасе
-            const stepMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0xD2B48C,
-                roughness: 0.8,
-                metalness: 0.1
-            });
-            
-            for (let i = 0; i < 3; i++) {
-                const stepGeometry = new THREE.BoxGeometry(2, 0.2, 0.3);
-                const step = new THREE.Mesh(stepGeometry, stepMaterial);
-                step.position.set(0, i * 0.2 - 0.3, 4.7 + i * 0.3);
-                step.castShadow = true;
-                step.receiveShadow = true;
-                house.add(step);
-            }
-            
-            // Дымоход
-            const chimneyGroup = new THREE.Group();
-            
-            const chimneyBase = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2, 0.8), foundationMaterial);
-            const chimneyTop = new THREE.Mesh(new THREE.BoxGeometry(1, 0.2, 1), foundationMaterial);
-            const chimneyPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.5), gutterMaterial);
-            
-            chimneyBase.position.set(2, 8.5, -1);
-            chimneyTop.position.set(2, 9.6, -1);
-            chimneyPipe.position.set(2, 10, -1);
-            
-            chimneyBase.castShadow = true;
-            chimneyTop.castShadow = true;
-            chimneyPipe.castShadow = true;
-            
-            chimneyGroup.add(chimneyBase);
-            chimneyGroup.add(chimneyTop);
-            chimneyGroup.add(chimneyPipe);
-            
-            house.add(chimneyGroup);
-            
-            // Ландшафт - более детальный
-            const groundGeometry = new THREE.PlaneGeometry(80, 80, 32, 32);
-            const groundMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x228B22,
-                roughness: 0.9,
-                metalness: 0
-            });
-            
-            // Добавляем неровности местности
-            const positions = groundGeometry.attributes.position;
-            for (let i = 0; i < positions.count; i++) {
-                const x = positions.getX(i);
-                const z = positions.getZ(i);
-                const distance = Math.sqrt(x * x + z * z);
-                const height = Math.sin(distance * 0.1) * 0.5 + Math.random() * 0.3;
-                positions.setY(i, height - 1);
-            }
-            groundGeometry.attributes.position.needsUpdate = true;
-            groundGeometry.computeVertexNormals();
-            
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-            ground.rotation.x = -Math.PI / 2;
-            ground.receiveShadow = true;
-            scene.add(ground);
-            
-            // Деревья вокруг дома
-            const treeTrunkMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x8B4513,
-                roughness: 0.9,
-                metalness: 0
-            });
-            const treeLeaveMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x228B22,
-                roughness: 0.8,
-                metalness: 0
-            });
-            
-            function createTree(x, z, height = 8) {
-                const treeGroup = new THREE.Group();
-                
-                const trunk = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.3, 0.4, height * 0.6),
-                    treeTrunkMaterial
-                );
-                trunk.position.y = height * 0.3;
-                trunk.castShadow = true;
-                
-                const leaves = new THREE.Mesh(
-                    new THREE.SphereGeometry(height * 0.4),
-                    treeLeaveMaterial
-                );
-                leaves.position.y = height * 0.8;
-                leaves.castShadow = true;
-                leaves.receiveShadow = true;
-                
-                treeGroup.add(trunk);
-                treeGroup.add(leaves);
-                treeGroup.position.set(x, -1, z);
-                
-                return treeGroup;
-            }
-            
-            // Размещаем деревья
-            const treePositions = [
-                [-15, -10], [18, -8], [-12, 15], [20, 12],
-                [-25, 5], [25, -15], [-18, 20], [15, 18],
-                [-8, -20], [10, -18]
-            ];
-            
-            treePositions.forEach(([x, z]) => {
-                const tree = createTree(x, z, 6 + Math.random() * 4);
-                scene.add(tree);
-            });
-            
-            // Забор
-            const fencePostMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x8B4513,
-                roughness: 0.8,
-                metalness: 0
-            });
-            
-            function createFenceSection(startX, startZ, endX, endZ) {
-                const fenceGroup = new THREE.Group();
-                const distance = Math.sqrt((endX - startX) ** 2 + (endZ - startZ) ** 2);
-                const posts = Math.floor(distance / 2) + 1;
-                
-                for (let i = 0; i < posts; i++) {
-                    const t = i / (posts - 1);
-                    const x = startX + (endX - startX) * t;
-                    const z = startZ + (endZ - startZ) * t;
-                    
-                    const post = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.1, 1.5, 0.1),
-                        fencePostMaterial
-                    );
-                    post.position.set(x, 0.75, z);
-                    post.castShadow = true;
-                    fenceGroup.add(post);
-                    
-                    if (i < posts - 1) {
-                        const nextT = (i + 1) / (posts - 1);
-                        const nextX = startX + (endX - startX) * nextT;
-                        const nextZ = startZ + (endZ - startZ) * nextT;
-                        
-                        const plankLength = Math.sqrt((nextX - x) ** 2 + (nextZ - z) ** 2);
-                        const angle = Math.atan2(nextZ - z, nextX - x);
-                        
-                        for (let h = 0; h < 3; h++) {
-                            const plank = new THREE.Mesh(
-                                new THREE.BoxGeometry(plankLength, 0.05, 0.15),
-                                fencePostMaterial
-                            );
-                            plank.position.set(
-                                x + (nextX - x) / 2,
-                                0.3 + h * 0.4,
-                                z + (nextZ - z) / 2
-                            );
-                            plank.rotation.y = angle;
-                            plank.castShadow = true;
-                            fenceGroup.add(plank);
-                        }
-                    }
-                }
-                
-                return fenceGroup;
-            }
-            
-            // Добавляем забор по периметру участка
-            const fenceSections = [
-                [-30, -25, 30, -25],
-                [30, -25, 30, 25],
-                [30, 25, -30, 25],
-                [-30, 25, -30, -25]
-            ];
-            
-            fenceSections.forEach(([x1, z1, x2, z2]) => {
-                const section = createFenceSection(x1, z1, x2, z2);
-                scene.add(section);
-            });
-            
-            // Садовая дорожка
-            const pathMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x696969,
-                roughness: 0.7,
-                metalness: 0.1
-            });
-            
-            const pathGeometry = new THREE.BoxGeometry(2, 0.05, 20);
-            const path = new THREE.Mesh(pathGeometry, pathMaterial);
-            path.position.set(0, -0.9, -5);
-            path.receiveShadow = true;
-            scene.add(path);
-            
-            // Освещение участка - фонари
-            const lampPostMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x2F4F4F,
-                roughness: 0.3,
-                metalness: 0.8
-            });
-            
-            const lampGlowMaterial = new THREE.MeshBasicMaterial({
-                color: 0xFFFFAA,
-                transparent: true,
-                opacity: 0.7
-            });
-            
-            function createLamp(x, z) {
-                const lampGroup = new THREE.Group();
-                
-                const post = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.05, 0.05, 3),
-                    lampPostMaterial
-                );
-                post.position.y = 1.5;
-                
-                const lampHead = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.2),
-                    lampGlowMaterial
-                );
-                lampHead.position.y = 3.2;
-                
-                const light = new THREE.PointLight(0xFFFFAA, 0.5, 10);
-                light.position.y = 3.2;
-                light.castShadow = true;
-                light.shadow.mapSize.width = 512;
-                light.shadow.mapSize.height = 512;
-                
-                lampGroup.add(post);
-                lampGroup.add(lampHead);
-                lampGroup.add(light);
-                lampGroup.position.set(x, -1, z);
-                
-                return lampGroup;
-            }
-            
-            // Размещаем фонари
-            scene.add(createLamp(-8, 10));
-            scene.add(createLamp(8, 10));
-            
-            // Облака в небе
-            const cloudMaterial = new THREE.MeshBasicMaterial({
-                color: 0xFFFFFF,
-                transparent: true,
-                opacity: 0.8
-            });
-            
-            function createCloud(x, y, z, scale = 1) {
-                const cloudGroup = new THREE.Group();
-                
-                for (let i = 0; i < 5; i++) {
-                    const sphere = new THREE.Mesh(
-                        new THREE.SphereGeometry(1 + Math.random() * 0.5),
-                        cloudMaterial
-                    );
-                    sphere.position.set(
-                        (Math.random() - 0.5) * 4 * scale,
-                        (Math.random() - 0.5) * 1 * scale,
-                        (Math.random() - 0.5) * 4 * scale
-                    );
-                    sphere.scale.setScalar(scale);
-                    cloudGroup.add(sphere);
-                }
-                
-                cloudGroup.position.set(x, y, z);
-                return cloudGroup;
-            }
-            
-            // Добавляем облака
-            scene.add(createCloud(-30, 25, -20, 2));
-            scene.add(createCloud(35, 30, 10, 1.5));
-            scene.add(createCloud(-20, 28, 25, 1.8));
-            
-            // Добавление дома в сцену
-            scene.add(house);
-            
-            // Управление мышью
-            container.addEventListener('mousedown', onMouseDown);
-            container.addEventListener('mousemove', onMouseMove);
-            container.addEventListener('mouseup', onMouseUp);
-            container.addEventListener('wheel', onMouseWheel);
-            
-            // Управление касанием
-            container.addEventListener('touchstart', onTouchStart);
-            container.addEventListener('touchmove', onTouchMove);
-            container.addEventListener('touchend', onTouchEnd);
-            
-            // Обработка изменения размера
-            window.addEventListener('resize', onWindowResize);
-            
-            // Скрытие индикатора загрузки
-            document.getElementById('loading').style.display = 'none';
-            
-            animate();
+        const companies = [
+            { rank: 1, company: 'Лукойл', ticker: 'LKOH', sector: 'oil', divYield: 9.2, years: 20, payments: 4, growth1y: 15, growth5y: 45, growth10y: 180, growth20y: 850, stability: 'high' },
+            { rank: 2, company: 'Газпром', ticker: 'GAZP', sector: 'oil', divYield: 13.5, years: 18, payments: 1, growth1y: -12, growth5y: -35, growth10y: 20, growth20y: 420, stability: 'high' },
+            { rank: 3, company: 'Сбербанк', ticker: 'SBER', sector: 'bank', divYield: 12.8, years: 15, payments: 2, growth1y: 68, growth5y: 95, growth10y: 280, growth20y: 1200, stability: 'high' },
+            { rank: 4, company: 'Татнефть', ticker: 'TATN', sector: 'oil', divYield: 11.5, years: 20, payments: 2, growth1y: 22, growth5y: 55, growth10y: 210, growth20y: 920, stability: 'high' },
+            { rank: 5, company: 'Новатэк', ticker: 'NVTK', sector: 'oil', divYield: 7.8, years: 15, payments: 2, growth1y: 18, growth5y: 125, growth10y: 580, growth20y: null, stability: 'high' },
+            { rank: 6, company: 'Сургутнефтегаз', ticker: 'SNGS', sector: 'oil', divYield: 15.2, years: 18, payments: 1, growth1y: -8, growth5y: -20, growth10y: 15, growth20y: 180, stability: 'medium' },
+            { rank: 7, company: 'ВТБ', ticker: 'VTBR', sector: 'bank', divYield: 14.5, years: 12, payments: 2, growth1y: 25, growth5y: -15, growth10y: -45, growth20y: null, stability: 'medium' },
+            { rank: 8, company: 'МТС', ticker: 'MTSS', sector: 'telecom', divYield: 10.3, years: 16, payments: 2, growth1y: 12, growth5y: 38, growth10y: 125, growth20y: 680, stability: 'high' },
+            { rank: 9, company: 'Полюс', ticker: 'PLZL', sector: 'metal', divYield: 6.2, years: 10, payments: 2, growth1y: -5, growth5y: 85, growth10y: 420, growth20y: null, stability: 'high' },
+            { rank: 10, company: 'Северсталь', ticker: 'CHMF', sector: 'metal', divYield: 16.8, years: 15, payments: 4, growth1y: 8, growth5y: 42, growth10y: 180, growth20y: 650, stability: 'high' },
+            { rank: 11, company: 'НЛМК', ticker: 'NLMK', sector: 'metal', divYield: 18.5, years: 14, payments: 4, growth1y: 3, growth5y: 35, growth10y: 165, growth20y: null, stability: 'high' },
+            { rank: 12, company: 'ММК', ticker: 'MAGN', sector: 'metal', divYield: 21.2, years: 15, payments: 4, growth1y: -2, growth5y: 28, growth10y: 155, growth20y: 580, stability: 'high' },
+            { rank: 13, company: 'Норникель', ticker: 'GMKN', sector: 'metal', divYield: 8.9, years: 18, payments: 2, growth1y: -15, growth5y: 15, growth10y: 240, growth20y: 1450, stability: 'high' },
+            { rank: 14, company: 'Транснефть', ticker: 'TRNFP', sector: 'transport', divYield: 9.7, years: 16, payments: 2, growth1y: 18, growth5y: 48, growth10y: 195, growth20y: null, stability: 'high' },
+            { rank: 15, company: 'ФосАгро', ticker: 'PHOR', sector: 'chemical', divYield: 11.2, years: 12, payments: 2, growth1y: -12, growth5y: 52, growth10y: 280, growth20y: null, stability: 'high' },
+            { rank: 16, company: 'Алроса', ticker: 'ALRS', sector: 'metal', divYield: 12.5, years: 14, payments: 2, growth1y: -8, growth5y: -25, growth10y: 45, growth20y: null, stability: 'medium' },
+            { rank: 17, company: 'Интер РАО', ticker: 'IRAO', sector: 'energy', divYield: 13.8, years: 10, payments: 2, growth1y: 42, growth5y: 125, growth10y: 385, growth20y: null, stability: 'medium' },
+            { rank: 18, company: 'Русгидро', ticker: 'HYDR', sector: 'energy', divYield: 11.5, years: 12, payments: 2, growth1y: 8, growth5y: 15, growth10y: 85, growth20y: null, stability: 'medium' },
+            { rank: 19, company: 'Магнит', ticker: 'MGNT', sector: 'retail', divYield: 4.2, years: 10, payments: 2, growth1y: 25, growth5y: 45, growth10y: 220, growth20y: null, stability: 'medium' },
+            { rank: 20, company: 'Роснефть', ticker: 'ROSN', sector: 'oil', divYield: 8.5, years: 14, payments: 1, growth1y: 12, growth5y: 28, growth10y: 142, growth20y: null, stability: 'high' },
+            { rank: 21, company: 'Мосбиржа', ticker: 'MOEX', sector: 'bank', divYield: 14.2, years: 11, payments: 4, growth1y: 18, growth5y: 95, growth10y: 420, growth20y: null, stability: 'high' },
+            { rank: 22, company: 'Ростелеком', ticker: 'RTKM', sector: 'telecom', divYield: 8.8, years: 13, payments: 2, growth1y: 5, growth5y: 12, growth10y: 65, growth20y: 280, stability: 'medium' },
+            { rank: 23, company: 'Система', ticker: 'AFKS', sector: 'tech', divYield: 6.5, years: 8, payments: 2, growth1y: -5, growth5y: 25, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 24, company: 'TCS Group', ticker: 'TCSG', sector: 'bank', divYield: 3.8, years: 7, payments: 2, growth1y: 85, growth5y: 420, growth10y: null, growth20y: null, stability: 'high' },
+            { rank: 25, company: 'Polymetal', ticker: 'POLY', sector: 'metal', divYield: 7.2, years: 10, payments: 2, growth1y: -35, growth5y: -15, growth10y: 185, growth20y: null, stability: 'medium' },
+            { rank: 26, company: 'Распадская', ticker: 'RASP', sector: 'metal', divYield: 8.5, years: 8, payments: 2, growth1y: 15, growth5y: 45, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 27, company: 'Русал', ticker: 'RUAL', sector: 'metal', divYield: 5.2, years: 5, payments: 1, growth1y: -18, growth5y: -35, growth10y: 25, growth20y: null, stability: 'low' },
+            { rank: 28, company: 'Мечел', ticker: 'MTLR', sector: 'metal', divYield: 2.5, years: 4, payments: 1, growth1y: -25, growth5y: -65, growth10y: -75, growth20y: null, stability: 'low' },
+            { rank: 29, company: 'Башнефть', ticker: 'BANE', sector: 'oil', divYield: 7.5, years: 10, payments: 2, growth1y: 8, growth5y: 35, growth10y: 125, growth20y: null, stability: 'medium' },
+            { rank: 30, company: 'Группа Черкизово', ticker: 'GCHE', sector: 'retail', divYield: 5.8, years: 8, payments: 2, growth1y: 12, growth5y: 65, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 31, company: 'ПИК', ticker: 'PIKK', sector: 'retail', divYield: 4.5, years: 6, payments: 2, growth1y: 45, growth5y: 185, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 32, company: 'Белуга Групп', ticker: 'BELU', sector: 'retail', divYield: 6.2, years: 5, payments: 2, growth1y: 22, growth5y: 95, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 33, company: 'ЛСР', ticker: 'LSRG', sector: 'retail', divYield: 7.8, years: 12, payments: 2, growth1y: 8, growth5y: 42, growth10y: 155, growth20y: null, stability: 'medium' },
+            { rank: 34, company: 'Аэрофлот', ticker: 'AFLT', sector: 'transport', divYield: 1.2, years: 8, payments: 1, growth1y: -15, growth5y: -45, growth10y: 25, growth20y: null, stability: 'low' },
+            { rank: 35, company: 'Россети', ticker: 'RSTI', sector: 'energy', divYield: 9.5, years: 10, payments: 2, growth1y: 5, growth5y: 18, growth10y: 85, growth20y: null, stability: 'medium' },
+            { rank: 36, company: 'МРСК Центра', ticker: 'MRKC', sector: 'energy', divYield: 12.2, years: 12, payments: 2, growth1y: 8, growth5y: 25, growth10y: 105, growth20y: null, stability: 'medium' },
+            { rank: 37, company: 'МРСК Центра и Приволжья', ticker: 'MRKP', sector: 'energy', divYield: 11.8, years: 11, payments: 2, growth1y: 12, growth5y: 35, growth10y: 125, growth20y: null, stability: 'medium' },
+            { rank: 38, company: 'Ленэнерго', ticker: 'LSNG', sector: 'energy', divYield: 10.5, years: 13, payments: 2, growth1y: 15, growth5y: 42, growth10y: 158, growth20y: null, stability: 'medium' },
+            { rank: 39, company: 'МГТС', ticker: 'MGTS', sector: 'telecom', divYield: 13.5, years: 15, payments: 2, growth1y: 5, growth5y: 22, growth10y: 95, growth20y: 385, stability: 'high' },
+            { rank: 40, company: 'Детский мир', ticker: 'DSKY', sector: 'retail', divYield: 5.5, years: 6, payments: 2, growth1y: 18, growth5y: 85, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 41, company: 'Глобалтранс', ticker: 'GLTR', sector: 'transport', divYield: 8.2, years: 10, payments: 2, growth1y: 12, growth5y: 45, growth10y: 185, growth20y: null, stability: 'medium' },
+            { rank: 42, company: 'Совкомфлот', ticker: 'FLOT', sector: 'transport', divYield: 6.8, years: 5, payments: 2, growth1y: 25, growth5y: 95, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 43, company: 'Евраз', ticker: 'EVRE', sector: 'metal', divYield: 9.5, years: 8, payments: 2, growth1y: -8, growth5y: 15, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 44, company: 'НМТП', ticker: 'NMTP', sector: 'transport', divYield: 7.5, years: 9, payments: 2, growth1y: 8, growth5y: 38, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 45, company: 'Юнипро', ticker: 'UPRO', sector: 'energy', divYield: 10.8, years: 10, payments: 2, growth1y: 5, growth5y: 28, growth10y: 115, growth20y: null, stability: 'medium' },
+            { rank: 46, company: 'Мосэнерго', ticker: 'MSNG', sector: 'energy', divYield: 11.2, years: 12, payments: 2, growth1y: 8, growth5y: 32, growth10y: 125, growth20y: null, stability: 'medium' },
+            { rank: 47, company: 'ОГК-2', ticker: 'OGKB', sector: 'energy', divYield: 9.8, years: 11, payments: 2, growth1y: 12, growth5y: 42, growth10y: 155, growth20y: null, stability: 'medium' },
+            { rank: 48, company: 'Селигдар', ticker: 'SELG', sector: 'metal', divYield: 6.5, years: 7, payments: 2, growth1y: 5, growth5y: 35, growth10y: null, growth20y: null, stability: 'medium' },
+            { rank: 49, company: 'Фосагро преф', ticker: 'PHORP', sector: 'chemical', divYield: 12.5, years: 12, payments: 2, growth1y: -10, growth5y: 55, growth10y: 285, growth20y: null, stability: 'high' },
+            { rank: 50, company: 'Татнефть преф', ticker: 'TATNP', sector: 'oil', divYield: 14.2, years: 20, payments: 2, growth1y: 25, growth5y: 62, growth10y: 225, growth20y: 980, stability: 'high' }
+        ];
+
+        const sectorClasses = {
+            'oil': 'sector-oil',
+            'bank': 'sector-bank',
+            'telecom': 'sector-telecom',
+            'retail': 'sector-retail',
+            'metal': 'sector-metal',
+            'energy': 'sector-energy',
+            'transport': 'sector-transport',
+            'chemical': 'sector-chemical',
+            'tech': 'sector-tech'
+        };
+
+        const sectorNames = {
+            'oil': 'Нефть/газ',
+            'bank': 'Банки',
+            'telecom': 'Телеком',
+            'retail': 'Ритейл',
+            'metal': 'Металлург',
+            'energy': 'Энергетика',
+            'transport': 'Транспорт',
+            'chemical': 'Химия',
+            'tech': 'Технологии'
+        };
+
+        const stabilityClasses = {
+            'high': 'stability-high',
+            'medium': 'stability-medium',
+            'low': 'stability-low'
+        };
+
+        const stabilityNames = {
+            'high': 'Высокая',
+            'medium': 'Средняя',
+            'low': 'Низкая'
+        };
+
+        function getYieldClass(yield) {
+            if (yield >= 10) return 'yield-high';
+            if (yield >= 5) return 'yield-medium';
+            return 'yield-low';
         }
-        
-        function onMouseDown(event) {
-            isMouseDown = true;
-            mouseX = event.clientX;
-            mouseY = event.clientY;
+
+        function getGrowthClass(growth) {
+            if (growth === null) return 'growth-neutral';
+            if (growth > 0) return 'growth-positive';
+            return 'growth-negative';
         }
-        
-        function onMouseMove(event) {
-            if (!isMouseDown) return;
-            
-            const deltaX = event.clientX - mouseX;
-            const deltaY = event.clientY - mouseY;
-            
-            targetRotationY += deltaX * 0.01;
-            targetRotationX += deltaY * 0.01;
-            
-            mouseX = event.clientX;
-            mouseY = event.clientY;
+
+        function formatGrowth(growth) {
+            if (growth === null) return 'N/A';
+            return growth > 0 ? `+${growth}%` : `${growth}%`;
         }
-        
-        function onMouseUp() {
-            isMouseDown = false;
+
+        function getYieldCategory(yield) {
+            if (yield >= 10) return 'high';
+            if (yield >= 5) return 'medium';
+            return 'low';
         }
-        
-        function onMouseWheel(event) {
-            event.preventDefault();
-            camera.position.multiplyScalar(1 + event.deltaY * 0.001);
-            
-            // Ограничения масштаба
-            const distance = camera.position.length();
-            if (distance < 8) {
-                camera.position.normalize().multiplyScalar(8);
-            } else if (distance > 50) {
-                camera.position.normalize().multiplyScalar(50);
-            }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(company => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${company.rank}</td>
+                    <td><strong>${company.company}</strong></td>
+                    <td>${company.ticker}</td>
+                    <td><span class="sector ${sectorClasses[company.sector]}">${sectorNames[company.sector]}</span></td>
+                    <td><span class="dividend-yield ${getYieldClass(company.divYield)}">${company.divYield}%</span></td>
+                    <td><span class="years-badge">${company.years}л</span></td>
+                    <td>${company.payments}x</td>
+                    <td><span class="${getGrowthClass(company.growth1y)}">${formatGrowth(company.growth1y)}</span></td>
+                    <td><span class="${getGrowthClass(company.growth5y)}">${formatGrowth(company.growth5y)}</span></td>
+                    <td><span class="${getGrowthClass(company.growth10y)}">${formatGrowth(company.growth10y)}</span></td>
+                    <td><span class="${getGrowthClass(company.growth20y)}">${formatGrowth(company.growth20y)}</span></td>
+                    <td><span class="stability ${stabilityClasses[company.stability]}">${stabilityNames[company.stability]}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
         }
-        
-        // Обработка касаний для мобильных устройств
-        let touchStartX = 0, touchStartY = 0;
-        
-        function onTouchStart(event) {
-            event.preventDefault();
-            const touch = event.touches[0];
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-            isMouseDown = true;
-        }
-        
-        function onTouchMove(event) {
-            event.preventDefault();
-            if (!isMouseDown || !event.touches[0]) return;
-            
-            const touch = event.touches[0];
-            const deltaX = touch.clientX - touchStartX;
-            const deltaY = touch.clientY - touchStartY;
-            
-            targetRotationY += deltaX * 0.01;
-            targetRotationX += deltaY * 0.01;
-            
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-        }
-        
-        function onTouchEnd() {
-            isMouseDown = false;
-        }
-        
-        function onWindowResize() {
-            const container = document.getElementById('house3d');
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        }
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // Плавное вращение
-            house.rotation.y += (targetRotationY - house.rotation.y) * 0.05;
-            house.rotation.x += (targetRotationX - house.rotation.x) * 0.05;
-            
-            // Ограничения поворота по X
-            house.rotation.x = Math.max(-Math.PI / 4, Math.min(Math.PI / 6, house.rotation.x));
-            
-            // Автоматическое медленное вращение если пользователь не взаимодействует
-            if (!isMouseDown) {
-                targetRotationY += 0.002;
-            }
-            
-            renderer.render(scene, camera);
-        }
-        
-        function showTab(tabName) {
-            // Скрыть все вкладки
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-            
-            // Убрать активный класс у всех кнопок
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Показать выбранную вкладку
-            document.getElementById(tabName).classList.add('active');
-            
-            // Добавить активный класс к нажатой кнопке
-            event.target.classList.add('active');
-        }
-        
-        // Добавляем анимации при загрузке
-        window.addEventListener('load', function() {
-            // Инициализация 3D после загрузки
-            init3D();
-            
-            const elements = document.querySelectorAll('.spec-card, .material-card, .timeline-item');
-            elements.forEach((element, index) => {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(20px)';
+
+        // Фильтрация
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('sectorFilter').addEventListener('change', filterTable);
+        document.getElementById('yieldFilter').addEventListener('change', filterTable);
+
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sectorFilter = document.getElementById('sectorFilter').value;
+            const yieldFilter = document.getElementById('yieldFilter').value;
+
+            const filtered = companies.filter(company => {
+                const matchesSearch = company.company.toLowerCase().includes(searchTerm) || 
+                                    company.ticker.toLowerCase().includes(searchTerm);
+                const matchesSector = !sectorFilter || company.sector === sectorFilter;
+                const matchesYield = !yieldFilter || getYieldCategory(company.divYield) === yieldFilter;
                 
-                setTimeout(() => {
-                    element.style.transition = 'all 0.6s ease';
-                    element.style.opacity = '1';
-                    element.style.transform = 'translateY(0)';
-                }, index * 100);
+                return matchesSearch && matchesSector && matchesYield;
+            });
+
+            renderTable(filtered);
+            updateSummary(filtered);
+        }
+
+        function updateSummary(data) {
+            const avgYield = (data.reduce((sum, c) => sum + c.divYield, 0) / data.length).toFixed(1);
+            const highYieldCount = data.filter(c => c.divYield >= 10).length;
+            const avgYears = Math.round(data.reduce((sum, c) => sum + c.years, 0) / data.length);
+            const positiveGrowth5y = data.filter(c => c.growth5y !== null && c.growth5y > 0).length;
+
+            document.querySelector('.summary-cards').innerHTML = `
+                <div class="summary-card">
+                    <h3>Средняя дивдоходность</h3>
+                    <div class="value">${avgYield}%</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Компаний с дивдоходностью >10%</h3>
+                    <div class="value">${highYieldCount}</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Средний стаж выплат</h3>
+                    <div class="value">${avgYears} лет</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Компаний с ростом за 5 лет</h3>
+                    <div class="value">${positiveGrowth5y}</div>
+                </div>
+            `;
+        }
+
+        // Сортировка
+        let sortDirection = {};
+
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                sortDirection[sortKey] = sortDirection[sortKey] === 'asc' ? 'desc' : 'asc';
+                sortTable(sortKey, sortDirection[sortKey]);
             });
         });
-        
-        // Интерактивные элементы для комнат
-        document.addEventListener('DOMContentLoaded', function() {
-            const rooms = document.querySelectorAll('.room');
-            rooms.forEach(room => {
-                room.addEventListener('click', function() {
-                    const roomName = this.textContent.split('\n')[0];
-                    alert(`Помещение: ${roomName}\nВы можете добавить дополнительную информацию о планировке этой комнаты.`);
-                });
+
+        function sortTable(key, direction) {
+            let filtered = Array.from(document.getElementById('tableBody').children).map((row, index) => {
+                const companyName = row.cells[1].textContent.trim();
+                return companies.find(c => c.company === companyName);
+            }).filter(c => c !== undefined);
+
+            filtered.sort((a, b) => {
+                let valA = a[key];
+                let valB = b[key];
+
+                // Обработка null значений
+                if (valA === null && valB === null) return 0;
+                if (valA === null) return direction === 'asc' ? 1 : -1;
+                if (valB === null) return direction === 'asc' ? -1 : 1;
+
+                if (typeof valA === 'number') {
+                    return direction === 'asc' ? valA - valB : valB - valA;
+                } else {
+                    return direction === 'asc' ? 
+                        valA.localeCompare(valB, 'ru') : 
+                        valB.localeCompare(valA, 'ru');
+                }
             });
-        });
+
+            renderTable(filtered);
+        }
+
+        // Первоначальная отрисовка
+        renderTable(companies);
+        updateSummary(companies);
     </script>
 </body>
 </html>
